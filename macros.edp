@@ -1,0 +1,11 @@
+macro tr(u) u' //EOM                                        /* transpose of a vector */
+macro grad(u) [dx(u), dy(u)] // EOM                         /* gradient operator */
+macro div(u1, u2) (dx(u1)+dy(u2)) // EOM                    /* div operator */
+macro vol(Th) int2d(Th)(1.) //EOM                           /* volume of domain */
+macro per(Th) int1d(Th)(1.) //EOM                           /* perimeter of domain */
+macro EPS(u1, u2) [dx(u1), 1./2 * (dx(u2) + dy(u1)), 1./2 * (dx(u2) + dy(u1)), dy(u2)] // EOM       /* strain tensor */
+macro gradT(u) (grad(u) - grad(u)' * [N.x, N.y] * [N.x, N.y]) // EOM                                /* tangent gradient */                 
+
+
+macro E() (2 * mu * int2d(Th) (tr(EPS(u1, u2)) * EPS(u1, u2))) //EOM                                /* Energy Dissipation */
+macro wE() (2 *mu * tr(EPS(u1, u2)) * EPS(u1, u2) - 2 * mu * tr(EPS(u1, u2)) * EPS(w1, w2)) //EOM   /* Derivative of Energy Dissipation */
