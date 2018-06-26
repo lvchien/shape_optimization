@@ -1,0 +1,232 @@
+include "getARGV.idp"
+include "macros.edp"
+include "solvers.edp"
+
+load "medit";
+cout.precision(12);
+
+/////////////////////////////////////////////////////////////////////////////////
+///////////////////    Problem Configuration (Change here)  /////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+macro J() (E) //EOM                                         /* Objective function */
+macro dJ() (dE) //EOM                                       /* Derivative of objective function */
+macro Constr(Th) (Vol(Th)) //EOM                            /* Constraint function */ 
+macro dCon() (dVol) //EOM                                   /* Derivative of constraint function */
+
+macro SolveStateSystem() Stokes //EOM
+macro SolveAdjointSystem() AdjointStokes //EOM
+macro SolveRegEx() RegExLaplaceBeltrami //EOM
+
+macro L() (augLagrange) //EOM
+macro dL()  (dAugLagrange)  //EOM
+
+
+
+/* Config parameters */
+int config = getARGV("--config", 1);                        // Configuration: 1 for Stokes, 2 for elastic, so on
+int testcase = getARGV("--testcase", 1);                    // test case
+string meshname = getARGV("--meshname", "");                // name of mesh file
+string outputFolder = getARGV("--resu", "");                // The output directory
+int save = getARGV("--save", 1);                            // 1 = save all results, 0 = save nothing at all
+int ns = getARGV("--ns", 3);                                // Number of time steps to save results once
+
+
+/* Numerical parameters */
+real b0 = getARGV("--b0", 1e-2);                            // Initial value for penalty coefficient b
+real bmax = getARGV("--bmax", 1e1);                         // Maximal value for penalty coefficient b, no longer update if b > bmax
+real l0 = getARGV("--l0", 1e1);                             // Initial value for the Lagrange multiplier l
+real tau = getARGV("--tau", 1e-3);                          // Gradient step
+real alpha = getARGV("--alpha", 1.05);                      // Update coefficient for b : b^{n+1} = alpha*b^n
+real errc = getARGV("--errc", 1e-2);                        // Value for the stopping criterion \eps_{stop} on the residual
+real gm = getARGV("--gm", 1.);                              // Value of the regularization parameter
+int remesh = getARGV("--remesh", 1);                        // Remesh configuration: 1 = remesh if necessary, 0 = no remeshing
+real minarea = getARGV("--minarea", 1e-4);                  // Remesh parameter: remesh if any element has an area less than minarea
+real meshsize = getARGV("--meshsize",1./30);                // Required edge size when remeshing : hmax = meshsize, hmin = meshsize/sqrt(2)
+
+int jmax = getARGV("--jmax", 1000);
+int kmax = getARGV("--kmax", 15);
+
+real mu = getARGV("--mu", 1./200);                          // The kinematic viscosity coefficient of fluid
+real lambda;
+
+
+/* Load mesh */
+mesh Th;
+string strmesh = "meshes/" + meshname + ".mesh";
+cout << "Loading mesh " << meshname << "...";
+Th = readmesh(strmesh);
+cout << "done." << endl;
+cout.flush;
+
+
+/* Save the initial mesh */
+cout << "Results and figures will be saved in " << outputFolder << endl;
+system("mkdir " + outputFolder);
+savemesh(Th, outputFolder + "/initmesh.mesh");
+
+
+/* Save the command */
+ofstream cmd(outputFolder + "/command.sh");
+for (int i = 0; i < ARGV.n; i++)
+  cmd << ARGV[i] << " ";
+cmd << endl;
+cmd.flush;
+
+
+/* Finite element spaces */      
+fespace Vh(Th, P2);
+fespace Qh(Th, P1);
+
+
+/* Variables */
+Vh u1, u2, v1, v2, w1, w2, udc1, udc2;
+Qh p, q, qq, tta1, tta2, eta1, eta2, phi, psi;
+int j, k;
+real b = b0;
+real l = l0;
+real J0;                                                     
+ofstream fout(outputFolder + "/out.dat");
+
+
+/* Constraint data */                                    
+real constr0 = Constr(Th);
+real constrtarget = constr0;
+                         
+ofstream constrf(outputFolder + "/constrtarget");
+constrf << constrtarget << endl;
+constrf.flush;
+
+
+// Dirichlet boundary conditions
+if (config == 1)
+{
+  if (testcase == 1)                                                          // pipe test case
+  {                                                      
+    udc1 = (1 - y) * (2./3 - y);
+    udc2 = 0;
+  }
+  else if (testcase == 2)                                                     // diffuser test case
+  {                                                   
+    udc1 = y * (1 - y);
+    udc2 = 0;
+  }
+  else if (testcase == 3)                                                     // double pipe test case
+  {                                                   
+    udc1 = 1 - cos(8 * pi * y);
+    udc2 = 0;
+  }
+  else if (testcase == 4)                                                     // obstacle test case
+  {                                                   
+    udc1 = 1;
+    udc2 = 0;
+  }
+  /* else if (testcase == 5)                                                     // human lung test case
+  {                                                   
+    real ll = 1.5;                                                          // recheck 
+    udc1 = poiseuillex(ll-2./9, 2./3+2./9, ll-1./3, 1, x, y)
+      +poiseuillex(ll, 2./3, ll-1./9, 2./3+1./9, x, y)
+      +poiseuillex(ll-1./9, 1./3-1./9, ll, 1./3, x, y)
+      +poiseuillex(ll-1./3, 0, ll-2./9, 1./3-2./9, x, y);
+    
+    udc2 = poiseuilley(ll-2./9, 2./3+2./9, ll-1./3, 1, x, y)
+      +poiseuilley(ll, 2./3, ll-1./9,2./3+1./9, x, y)
+      +poiseuilley(ll-1./9,1./3-1./9,ll, 1./3, x, y)
+      +poiseuilley(ll-1./3, 0, ll-2./9, 1./3-2./9, x, y);
+  }*/
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////    Main   /////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////
+
+SolveStateSystem;	    
+
+/* Save the initial value of objective function */
+J0 = J;
+ofstream j0(outputFolder + "/J0");
+j0 << J0 << endl;
+j0.flush;
+
+
+real sgn = 1 + errc;                                                                      // L^2 norm of the shape gradient
+for (j = 0; (sgn > errc) && (j < jmax); j++) 
+{
+  SolveStateSystem;
+  SolveAdjointSystem;
+  SolveRegEx;
+
+  real L0 = L;                                                                            // value of Augmented Lagrange function before move mesh
+  real tau1 = tau;                                                                        // temporary gradient step
+
+  for (k = 0; k < kmax; k++) 
+  {
+    mesh Th1 = Th;                                                                        // temporary mesh
+
+    cout << "movemesh gradient step = "<< tau1 << endl;
+    real minarea1 = checkmovemesh(Th1, [x + tau1 * tta1, y + tau1 * tta2]);
+
+    if (remesh && minarea1 <= minarea) 
+    {
+      cout << "*** ADAPTMESH *** current minarea = " << minarea1 << ", required remesh minarea = " << minarea;
+      Th = adaptmesh(Th, hmax = meshsize, hmin = meshsize/sqrt(2), ratio = 1.5);
+    }
+    else
+    {
+      Th = movemesh(Th1, [x + tau1 * tta1, y + tau1 * tta2]);
+    }
+
+    SolveStateSystem;
+    SolveAdjointSystem;
+
+    real L1 = L;                                                                          // value of Augmented Lagrange function after move mesh
+    cout << "After deformation: L = " << L1 << " / before L0 = " << L0 << " (variation = " << 100 * (L1 - L0)/L0 << "%)" << endl;
+
+    if (L1 < L0)                                                                           // accept this deformation
+      {
+        break;
+      }
+    else                                                                                   // reset mesh and decrease gradient step
+      {
+        tau1 /= 2;
+        //Th = Th1;
+      }
+  } 
+
+  if (k == kmax) 
+  {
+    cout << "Warning : L_{n+1}>L_{n} (L0 = " << L0 << ", l = " << l << ")" << endl;
+  }
+
+  sgn = sqrt(int1d(Th, 3)(tta1^2 + tta2^2));
+
+  fout << J << " " <<  L << " " << Constr(Th) << " " << l << " " << sgn << " " << b << endl;
+
+  // Update Lagrange multiplier and penalty coefficient
+  l = l - b * (Constr(Th) - constrtarget)/constr0;
+  if (b < bmax)
+    b *= alpha;
+
+
+  /* Save post-processing data */
+  if (save && (j % ns == 0)) 
+  {
+    plot(Th, [tta1, tta2], wait = 0, value = 1, cmm = "Iteration " + j + "/" + jmax + " (testcase " + testcase + ")");
+    plot(Th, [u1, u2], wait = 0, value = 1, cmm = "Iteration " + j + "/" + jmax + " (testcase " + testcase + ")");
+    savesol(outputFolder + "/mesh." + j/ns + ".sol", Th, [u1, u2]);
+    savemesh(Th, outputFolder + "/mesh." + j/ns + ".mesh");
+    fout.flush;
+    cout << "Iteration " << j << "/" << jmax << " (testcase " << testcase << ")" << endl;
+  }
+}
+
+
+/* Save final data */
+if (save) 
+{
+  plot(Th, [u1,u2], ps = outputFolder + "/solution.ps", cmm = "Solution", wait = 0);
+  savesol(outputFolder + "/mesh_final.sol", Th, [u1, u2]);
+  savemesh(Th, outputFolder + "/mesh_final.mesh");
+  fout.flush;
+}
