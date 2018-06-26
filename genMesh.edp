@@ -53,9 +53,9 @@ if (config == 1)
     }
     else if (testcase == 4)                                                     // obstacle test case
     {
-        border fr0(t = -0.75, 0.75){x = t; y = -0.5; label = 3;}
+        border fr0(t = -0.75, 0.75){x = t; y = -0.5; label = 1;}
         border fr1(t = -0.5, 0.5){x = 0.75; y = t; label = 2;}
-        border fr2(t = 0.75, -0.75){x = t; y = 0.5; label = 3;}
+        border fr2(t = 0.75, -0.75){x = t; y = 0.5; label = 1;}
         border fr3(t = 0.5, -0.5){x = -0.75; y = t; label = 1;}
         border fr4(t = 0, 2 * pi){x = 0.1 * sin(t); y = 0.2 * cos(t); label = 3;}
 
