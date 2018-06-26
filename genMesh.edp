@@ -61,7 +61,7 @@ if (config == 1)
 
         Th= buildmesh(fr0(3 * nn) + fr1(2 * nn) + fr2(3 * nn) + fr3(2 * nn) + fr4(5 * nn));
     }
-    else if (testcase == 5)
+    else if (testcase == 5)                                                     // human lung test case
     {
         border fr0(t = 0, 1.05){x = t; y = 1.0/3; label = 3;}
         border fr1(t = -1.0/60, 0){x = 7.0/6 + 7 * t; y = -20 * t; label = 3;}
@@ -78,6 +78,56 @@ if (config == 1)
 
         Th= buildmesh(fr0(5 * nn) + fr1(2 * nn) + fr2(nn) + fr3(nn) + fr4(nn) + fr5(2 * nn) 
                     + fr6(nn) + fr7(nn) + fr8(nn) + fr9(2 * nn) + fr10(5 * nn) + fr11(2 * nn));
+    }
+}
+else if (config == 2)
+{
+    if (testcase == 1)                                                          // cantilever test case
+    {
+        real r = 0.3;                                                           // radius of holes
+
+        border L11(t = -3.3, 3.7){x = t; y = -1.5; label = 3;}
+        border L21(t = -1.5, -0.2){x = 3.7; y = t; label = 3;}
+        border L22(t = -0.2, 0.2){x = 3.7; y = t; label = 2;}
+        border L23(t = 0.2, 1.5){x = 3.7; y = t; label = 3;}
+        border L31(t = 3.7, -3.3){x = t; y = 1.5; label = 3;}
+        border L41(t = 1.5, 1.2){x = -3.3; y = t; label = 1;}
+        border L42(t = 1.2, -1.2){x = -3.3; y = t; label = 3;}
+        border L43(t = -1.2, -1.5){x = -3.3; y = t; label = 1;}
+
+        
+        border C11(t = 0, 2 * pi){x = -2.5 + r * cos(t); y = 0.8 + r * sin(t); label = 3;}
+        border C12(t = 0, 2 * pi){x = -0.3 + r * cos(t); y = 0.8 + r * sin(t); label = 3;}
+        border C13(t = 0, 2 * pi){x = 1.9 + r * cos(t); y = 0.8 + r * sin(t); label = 3;}
+        border C21(t = 0, 2 * pi){x = -1.4 + r * cos(t); y = r * sin(t); label = 3;}
+        border C22(t = 0, 2 * pi){x = 0.8 + r * cos(t); y = r * sin(t); label = 3;}
+        border C23(t = 0, 2 * pi){x = 3.0 + r * cos(t); y = r * sin(t); label = 3;}
+        border C31(t = 0, 2 * pi){x = -2.5 + r * cos(t); y = -0.8 + r * sin(t); label = 3;}
+        border C32(t = 0, 2 * pi){x = -0.3 + r * cos(t); y = -0.8 + r * sin(t); label = 3;}
+        border C33(t = 0, 2 * pi){x = 1.9 + r * cos(t); y = -0.8 + r * sin(t); label = 3;}
+
+        Th = buildmesh(L11(70 * nn) + L21(17 * nn) + L22(4 * nn) + L23(17 * nn) + L31(70 * nn) + L41(3 * nn) + L42(24 * nn) + L43(3 * nn)
+            + C11(-25 * nn) + C12(-25 * nn) + C13(-25 * nn) + C21(-25 * nn) + C22(-25 * nn) + 
+            C23(-25 * nn) + C31(-25 * nn) + C32(-25 * nn) + C33(-25 * nn));
+    }
+    else if (testcase == 2)                                                       // bridge with 3 ellipsoid holes test case
+    {
+        real r = 0.1;
+
+        border L11(t = -1.0, -0.8){x = t; y = 0; label = 1;}
+        border L12(t = -0.8, 0.8){x = t; y = 0; label = 2;}
+        border L13(t = 0.8, 1.0){x = t; y = 0; label = 1;}
+        
+        border L2(t = 0, 1){x = 1; y = t; label = 3;}
+        border L3(t = 1, -1){x = t; y = 1; label = 3;}
+        border L4(t = 1, 0){x = -1; y = t; label= 3;}
+        
+        border C0(t = 0, 2 * pi){x = r * cos(t); y = 0.4 + 2 * r * sin(t); label = 3;}
+        border C1(t = 0, 2 * pi){x = -0.5 + r * cos(t); y = 0.4 + 2 * r * sin(t); label=3;}
+        border C2(t = 0, 2 * pi){x = 0.5 + r * cos(t); y = 0.4 + 2 * r * sin(t); label=3;}
+
+        Th = buildmesh(L11(2 * nn) + L12(16 * nn) + L13(2 * nn) + L2(10 * nn) + L3(20 * nn) + L4(10 * nn)
+            + C0(-12 * nn) + C1(-12 * nn) + C2(-12 * nn));
     }
 }
 
