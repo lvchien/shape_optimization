@@ -11,7 +11,7 @@ macro Stokes()
 macro AdjointStokes() 
 {
   solve ad([w1, w2, qq], [v1, v2, q]) =
-    int2d(Th)(2 * mu * tr(EPS(w1, w2))*EPS(v1, v2) - qq * div(v1, v2) - q * div(w1, w2))
+    int2d(Th)(2 * mu * tr(EPS(w1, w2)) * EPS(v1, v2) - qq * div(v1, v2) - q * div(w1, w2))
     + int2d(Th)(-4 * mu * tr(EPS(u1, u2)) * EPS(v1, v2))
     - int2d(Th)(qq * q * 1e-8)
     + on(1, 3, w1 = 0, w2 = 0);
@@ -28,13 +28,15 @@ macro RegExLaplaceBeltrami()
     + on(1, 2, tta1 = 0, tta2 = 0);
 } //EOM
 
-macro RegExElliptic() {
+macro RegExElliptic() 
+{
   solve re([tta1, tta2], [eta1, eta2]) =
     int2d(Th)(gm * tr(EPS(tta1, tta2)) * EPS(eta1, eta2))
 	  + int2d(Th)(tta1 * eta1 + tta2 * eta2)
     + int1d(Th, 3)(dL * tr([eta1, eta2]) * [N.x, N.y])
     + on(1, 2, tta1 = 0, tta2 = 0);
 } //EOM
+
 
 macro Streamlines()
 {

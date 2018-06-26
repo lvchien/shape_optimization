@@ -1,19 +1,25 @@
 macro tr(u) u' //EOM                                        /* transpose of a vector */
 macro grad(u) [dx(u), dy(u)] // EOM                         /* gradient operator */
-macro div(u1, u2) (dx(u1)+dy(u2)) // EOM                    /* div operator */
+macro div(u1, u2) (dx(u1) + dy(u2)) // EOM                  /* div operator */
 macro EPS(u1, u2) [dx(u1), 1./2 * (dx(u2) + dy(u1)), 1./2 * (dx(u2) + dy(u1)), dy(u2)] // EOM       /* strain tensor */
-macro AEPS(u1, u2) [2 * mu * dx(u1) + lambda * div(u1, u2), mu * (dx(u2) + dy(u1)), mu * (dx(u2) + dy(u1)), 2 * mu * dy(u2) + lambda * div(u1, u2)] //EOM           /* Hooke's law */
+macro AEPS(u1, u2) [2. * mu * dx(u1) + lambda * div(u1, u2), mu * (dx(u2) + dy(u1)), mu * (dx(u2) + dy(u1)), 2. * mu * dy(u2) + lambda * div(u1, u2)] //EOM           /* Hooke's law */
 macro gradT(u) (grad(u) - grad(u)' * [N.x, N.y] * [N.x, N.y]) // EOM                                /* tangent gradient */                 
 
+
+/* Constraint functions */
 macro Vol(Th) int2d(Th)(1.) //EOM                           /* volume of domain */
 macro Per(Th) int1d(Th)(1.) //EOM                           /* perimeter of domain */
 macro dVol() (1.) //EOM                                     /* Derivative of Volume */
 
-macro E() (2 * mu * int2d(Th) (tr(EPS(u1, u2)) * EPS(u1, u2))) //EOM                                /* Energy Dissipation */
-macro dE() (-2 * mu * tr(EPS(u1, u2)) * EPS(u1, u2) + 2 * mu * tr(EPS(u1, u2)) * EPS(w1, w2)) //EOM /* Derivative of Energy Dissipation */
 
-macro augLagrange() (J/J0 - l * (Constr(Th) - constrtarget)/constr0 + b/2 * ((Constr(Th) - constrtarget) ^ 2)/(constr0 ^ 2)) //EOM      /* Augmented Lagrange function */
-macro dAugLagrange() (dJ/J0 - l * dCon/constr0 + b * dCon * (Constr(Th) - constrtarget)/(constr0 ^ 2)) //EOM                 /* Derivative of the augmented Lagrange function*/
+/* Objective functions */
+macro E() (2. * mu * int2d(Th) (tr(EPS(u1, u2)) * EPS(u1, u2))) //EOM                                /* Energy Dissipation */
+macro dE() (-2. * mu * tr(EPS(u1, u2)) * EPS(u1, u2) + 2. * mu * tr(EPS(u1, u2)) * EPS(w1, w2)) //EOM /* Derivative of Energy Dissipation */
+
+
+/* Lagrange functions */
+macro augLagrange() (J/J0 - l * (Constr(Th) - constrtarget)/constr0 + b/2. * ((Constr(Th) - constrtarget) ^ 2)/(constr0 ^ 2)) //EOM         /* Augmented Lagrange function */
+macro dAugLagrange() (dJ/J0 - l * dCon/constr0 + b * dCon * (Constr(Th) - constrtarget)/(constr0 ^ 2)) //EOM                                /* Derivative of the augmented Lagrange function*/
 
 macro comLagrange() (J/J0 + l * (Constr(Th) - constrtarget)/constr0) //EOM                          /* Common Lagrange function */
 macro dComLagrange() (dJ/J0 + l * dCon/constr0) //EOM                                               /* Derivative of common Lagrange */
