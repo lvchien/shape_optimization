@@ -17,10 +17,10 @@ if (config == 1)
 {
     if (testcase == 1)                                                          // pipe test case
     {
-        border fr0(t = 0, 1){x = -3 + t; y = 0; label = 2;}
-        border fr1(t = pi, pi/2){x = 2 * cos(t); y = 2 * sin(t); label = 3;}
-        border fr2(t = 0, 1){x = 0; y = 2 + t; label = 1;}
-        border fr3(t = pi/2, pi){x = 3 * cos(t); y = 3 * sin(t); label = 3;}
+        border fr0(t = 0, 1){x = -1 + 1.0/3 * t; y = 0; label = 2;}
+        border fr1(t = pi, pi/2){x = 2.0/3 * cos(t); y = 2.0/3 * sin(t); label = 3;}
+        border fr2(t = 0, 1){x = 0; y = 2.0/3 + 1.0/3 * t; label = 1;}
+        border fr3(t = pi/2, pi){x = cos(t); y = sin(t); label = 3;}
 
         Th= buildmesh(fr0(nn) + fr1(2 * nn) + fr2(nn) + fr3(2 * nn));
     }
