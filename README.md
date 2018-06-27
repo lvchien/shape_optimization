@@ -19,12 +19,10 @@ Freefem++ genMesh.edp [--config numconfig] [--testcase numtestcase] [--meshname 
 
 #### Run main algorithm:
 First, we have to setting problem's configurations by redefine macros:
-```
-Objective funtion **J** and its derivative **dJ**
-Constraint function Constr  and its derivative dCon
-Lagrange function L and its derivative dL
-Solvers of the state system, adjoint system and regularization extension proceduce.
-```
+1. Objective funtion **J** and its derivative **dJ**
+2. Constraint function **Constr**  and its derivative **dCon**
+3. Lagrange function **L** and its derivative **dL**
+4. Solvers of the state system, adjoint system and regularization extension proceduce.
 
 The general syntax is:
 ```
