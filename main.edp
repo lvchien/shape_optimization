@@ -49,10 +49,15 @@ real gm = getARGV("--gm", 1.);                              // Value of the regu
 real minarea = getARGV("--minarea", 1e-4);                  // Remesh parameter: remesh if any element has an area less than minarea
 real meshsize = getARGV("--meshsize",1./30);                // Required edge size when remeshing : hmax = meshsize, hmin = meshsize/sqrt(2)
 int remesh = getARGV("--remesh", 1);                        // Remesh configuration: 1 = remesh if necessary, 0 = no remeshing
+
+
+/* Problem parameters*/
 real mu = getARGV("--mu", 1./200);                          // The kinematic viscosity coefficient of fluid
 real E = getARGV("--E", 1.0);                               // The Young modulus of material 
 real nu = getARGV("--nu", 0.3);                             // The Poisson ratio 
 
+
+/* Iterators */
 int jmax = getARGV("--jmax", 1000);
 int kmax = getARGV("--kmax", 5);
 
