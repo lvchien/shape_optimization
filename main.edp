@@ -18,8 +18,8 @@ macro SolveStateSystem() Elastic //EOM
 macro SolveAdjointSystem() {;} //EOM
 macro SolveRegEx() RegExElliptic //EOM
 
-macro L() (comLagrange) //EOM
-macro dL()  (dComLagrange)  //EOM
+macro L() (augLagrange) //EOM
+macro dL()  (dAugLagrange)  //EOM
 
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -217,8 +217,6 @@ for (j = 0; j < jmax; j++)
       b *= alpha;
   }
 
-  /* Save post-processing data */
-  fout << J << " " <<  L << " " << Constr(Th) << " " << l << " " << sgn << " " << b << endl;
 
   if (save && (j % ns == 0)) 
   {
@@ -235,6 +233,11 @@ for (j = 0; j < jmax; j++)
     cout << "Shape will not be changed furthermore! The process will be ended here!" << endl;
     break;
   }
+  else
+  {
+    /* Save post-processing data */
+    fout << J << " " <<  L << " " << Constr(Th) << " " << l << " " << sgn << " " << b << endl;
+  }
 }
 
 
@@ -244,5 +247,4 @@ if (save)
   plot(Th, [u1,u2], cmm = "Solution", wait = 0);
   savesol(outputFolder + "/mesh_final.sol", Th, [u1, u2]);
   savemesh(Th, outputFolder + "/mesh_final.mesh");
-  fout.flush;
 }
