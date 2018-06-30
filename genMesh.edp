@@ -1,7 +1,7 @@
 /* Setting for the label of borders: 
-    1 for Gm_in, 
-    2 for Gm_out 
-    3 for Gm */
+    1 for non-homogeneous Dirichlet boudary, 
+    2 for Neumann boundary 
+    3 for homogeneous Dirichlet boundary */
 
 include "getARGV.idp"
 
