@@ -47,7 +47,7 @@ real alpha = getARGV("--alpha", 1.05);                      // Update coefficien
 real errc = getARGV("--errc", 1e-2);                        // Value for the stopping criterion \eps_{stop} on the residual
 real gm = getARGV("--gm", 1.);                              // Value of the regularization parameter
 real minarea = getARGV("--minarea", 1e-4);                  // Remesh parameter: remesh if any element has an area less than minarea
-real meshsize = getARGV("--meshsize",1./30);                // Required edge size when remeshing : hmax = meshsize, hmin = meshsize/sqrt(2)
+real meshsize = getARGV("--meshsize",0.03);                 // Required edge size when remeshing : hmax = meshsize, hmin = meshsize/sqrt(2)
 int remesh = getARGV("--remesh", 1);                        // Remesh configuration: 1 = remesh if necessary, 0 = no remeshing
 
 
