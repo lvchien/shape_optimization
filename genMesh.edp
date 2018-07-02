@@ -84,75 +84,118 @@ else if (config == 2)
 {
     if (testcase == 1)                                                          // cantilever test case
     {
-        real r = 0.3;                                                           // radius of holes
+        real r = 0.15;                                                          // radius of holes
 
-        border L11(t = -3.3, 3.7){x = t; y = -1.5; label = 3;}
-        border L21(t = -1.5, -0.2){x = 3.7; y = t; label = 3;}
-        border L22(t = -0.2, 0.2){x = 3.7; y = t; label = 2;}
-        border L23(t = 0.2, 1.5){x = 3.7; y = t; label = 3;}
-        border L31(t = 3.7, -3.3){x = t; y = 1.5; label = 3;}
-        border L41(t = 1.5, 1.2){x = -3.3; y = t; label = 1;}
-        border L42(t = 1.2, -1.2){x = -3.3; y = t; label = 3;}
-        border L43(t = -1.2, -1.5){x = -3.3; y = t; label = 1;}
+        border L11(t = -1.0, 1.0){x = t; y = 0.0; label = 3;}
+        border L21(t = 0.0, 0.4){x = 1.0; y = t; label = 3;}
+        border L22(t = 0.4, 0.6){x = 1.0; y = t; label = 2;}
+        border L23(t = 0.6, 1.0){x = 1.0; y = t; label = 3;}
+        border L31(t = 1.0, -1.0){x = t; y = 1.0; label = 3;}
+        border L41(t = 1.0, 0.8){x = -1.0; y = t; label = 1;}
+        border L42(t = 0.8, 0.2){x = -1.0; y = t; label = 3;}
+        border L43(t = 0.2, 0.0){x = -1.0; y = t; label = 1;}
 
         
-        border C11(t = 0, 2 * pi){x = -2.5 + r * cos(t); y = 0.8 + r * sin(t); label = 3;}
-        border C12(t = 0, 2 * pi){x = -0.3 + r * cos(t); y = 0.8 + r * sin(t); label = 3;}
-        border C13(t = 0, 2 * pi){x = 1.9 + r * cos(t); y = 0.8 + r * sin(t); label = 3;}
-        border C21(t = 0, 2 * pi){x = -1.4 + r * cos(t); y = r * sin(t); label = 3;}
-        border C22(t = 0, 2 * pi){x = 0.8 + r * cos(t); y = r * sin(t); label = 3;}
-        border C23(t = 0, 2 * pi){x = 3.0 + r * cos(t); y = r * sin(t); label = 3;}
-        border C31(t = 0, 2 * pi){x = -2.5 + r * cos(t); y = -0.8 + r * sin(t); label = 3;}
-        border C32(t = 0, 2 * pi){x = -0.3 + r * cos(t); y = -0.8 + r * sin(t); label = 3;}
-        border C33(t = 0, 2 * pi){x = 1.9 + r * cos(t); y = -0.8 + r * sin(t); label = 3;}
+        border C11(t = 0, 2 * pi){x = -5.0/7 + r * cos(t); y = 0.22 + r * sin(t); label = 3;}
+        border C12(t = 0, 2 * pi){x = -1.0/7 + r * cos(t); y = 0.22 + r * sin(t); label = 3;}
+        border C13(t = 0, 2 * pi){x = 3.0/7 + r * cos(t); y = 0.22  + r * sin(t); label = 3;}
+        border C21(t = 0, 2 * pi){x = -3.0/7 + r * cos(t); y = 0.5 + r * sin(t); label = 3;}
+        border C22(t = 0, 2 * pi){x = 1.0/7 + r * cos(t); y = 0.5 + r * sin(t); label = 3;}
+        border C23(t = 0, 2 * pi){x = 5.0/7 + r * cos(t); y = 0.5 + r * sin(t); label = 3;}
+        border C31(t = 0, 2 * pi){x = -5.0/7 + r * cos(t); y = 0.78 + r * sin(t); label = 3;}
+        border C32(t = 0, 2 * pi){x = -1.0/7 + r * cos(t); y = 0.78 + r * sin(t); label = 3;}
+        border C33(t = 0, 2 * pi){x = 3.0/7 + r * cos(t); y = 0.78 + r * sin(t); label = 3;}
 
-        Th = buildmesh(L11(70 * nn) + L21(17 * nn) + L22(4 * nn) + L23(17 * nn) + L31(70 * nn) + L41(3 * nn) + L42(24 * nn) + L43(3 * nn)
-            + C11(-25 * nn) + C12(-25 * nn) + C13(-25 * nn) + C21(-25 * nn) + C22(-25 * nn) + 
-            C23(-25 * nn) + C31(-25 * nn) + C32(-25 * nn) + C33(-25 * nn));
+        Th = buildmesh(L11(20 * nn) + L21(4 * nn) + L22(2 * nn) + L23(4 * nn) + L31(20 * nn) + L41(2 * nn) + L42(4 * nn) + L43(2 * nn)
+            + C11(-10 * nn) + C12(-10 * nn) + C13(-10 * nn) + C21(-10 * nn) + C22(-10 * nn) + 
+            C23(-10 * nn) + C31(-10 * nn) + C32(-10 * nn) + C33(-10 * nn)
+            );
     }
-    else if (testcase == 2)                                                       // bridge with 3 ellipsoid holes test case
+    else if (testcase == 2)                                                     // bridge with 3 ellipsoid and above rectangle boundary test case
+    {
+        real r = 0.2;
+
+        border L11(t = -1.0, -0.8){x = t; y = 0; label = 1;}
+        border L12(t = -0.8, 0.8){x = t; y = 0; label = 2;}
+        border L13(t = 0.8, 1.0){x = t; y = 0; label = 1;}
+        
+        border L21(t = 0, 1.2){x = 1.0; y = t; label = 3;}
+        border L22(t = 1.0, -1.0){x = t; y = 1.2; label = 3;}
+        border L23(t = 1.2, 0){x = -1.0; y = t; label = 3;}
+        
+        border C10(t = 0, 2 * pi){x = -0.6 + r * cos(t); y = 0.6 + 2 * r * sin(t); label = 3;}
+        border C11(t = 0, 2 * pi){x = r * cos(t); y = 0.6 + 2 * r * sin(t); label = 3;}
+        border C12(t = 0, 2 * pi){x = 0.6 + r * cos(t); y = 0.6 + 2 * r * sin(t); label = 3;}
+
+        Th = buildmesh(L11(2 * nn) + L12(16 * nn) + L13(2 * nn) + L21(12 * nn) + L22(20 * nn) + L23(12 * nn) 
+            + C10(-30 * nn) + C11(-30 * nn) + C12(-30 * nn) 
+            );
+    }
+    else if (testcase == 3)                                                     // bridge with 5 circles and circle above boundary test case
+    {
+        real r1 = 0.28;
+        real r2 = 0.20;
+
+        border L11(t = -1.0, -0.8){x = t; y = 0; label = 1;}
+        border L12(t = -0.8, 0.8){x = t; y = 0; label = 2;}
+        border L13(t = 0.8, 1.0){x = t; y = 0; label = 1;}
+        
+        border C(t = 0, pi){x = cos(t); y = sin(t); label = 3;}
+        
+        border C10(t = 0, 2 * pi){x = -0.6 + r1 * cos(t); y = 0.31 + r1 * sin(t); label = 3;}
+        border C11(t = 0, 2 * pi){x = r1 * cos(t); y = 0.31 + r1 * sin(t); label = 3;}
+        border C12(t = 0, 2 * pi){x = 0.6 + r1 * cos(t); y = 0.31 + r1 * sin(t); label = 3;}
+        border C21(t = 0, 2 * pi){x = -0.3 + r2 * cos(t); y = 0.72 + r2 * sin(t); label = 3;}
+        border C22(t = 0, 2 * pi){x = 0.3 + r2 * cos(t); y = 0.72 + r2 * sin(t); label = 3;}
+
+        Th = buildmesh(L11(2 * nn) + L12(16 * nn) + L13(2 * nn) + C(30 * nn) 
+            + C10(-16 * nn) + C11(-16 * nn) + C12(-16 * nn) 
+            + C21(-12 * nn) + C22(-12 * nn) 
+            );
+    }
+    else if (testcase == 4)                                                    // mast test case
     {
         real r = 0.1;
 
-        border L11(t = -1.0, -0.8){x = t; y = 0; label = 1;}
-        border L12(t = -0.8, 0.8){x = t; y = 0; label = 2;}
-        border L13(t = 0.8, 1.0){x = t; y = 0; label = 1;}
-        
-        border L2(t = 0, 1.2){x = 1; y = t; label = 3;}
-        border L3(t = 1, -1){x = t; y = 1.2; label = 3;}
-        border L4(t = 1.2, 0){x = -1; y = t; label= 3;}
-        
-        border C0(t = 0, 2 * pi){x = r * cos(t); y = 0.5 + 2 * r * sin(t); label = 3;}
-        border C1(t = 0, 2 * pi){x = -0.5 + r * cos(t); y = 0.5 + 2 * r * sin(t); label=3;}
-        border C2(t = 0, 2 * pi){x = 0.5 + r * cos(t); y = 0.5 + 2 * r * sin(t); label=3;}
+        border L11(t = 0.4, -0.4){x = t; y = 1.2; label = 3;}
+        border L21(t = 1.2, 0.8){x = -0.4; y = t; label = 3;}
+        border L31(t = -0.4, -0.2){x = t; y = 0.8; label = 2;}
+        // border L32(t = -0.3, -0.2){x = t; y = 0.8; label = 3;}
+        border L41(t = 0.8, 0.0){x = -0.2; y = t; label = 3;}
+        border L51(t = -0.2, -0.1){x = t; y = 0.0; label = 1;}
+        border L52(t = 0, 0.2){x = -0.1; y = t; label = 3;}
+        border L53(t = 0, 0.2){x = -0.1 + t; y = 0.2; label = 3;}
+        border L54(t = 0, 0.2){x = 0.1; y = 0.2 - t; label = 3;}
+        // border C52(t = pi, 0){x = 0.1 * cos(t); y = 0.1 * sin(t); label = 3;}
+        border L55(t = 0.1, 0.2){x = t; y = 0.0; label = 1;}
+        border L42(t = 0.0, 0.8){x = 0.2; y = t; label = 3;}
+        // border L33(t = 0.2, 0.3){x = t; y = 0.8; label = 3;}
+        border L34(t = 0.2, 0.4){x = t; y = 0.8; label = 2;}
+        border L22(t = 0.8, 1.2){x = 0.4; y = t; label = 3;}
 
-        Th = buildmesh(L11(2 * nn) + L12(16 * nn) + L13(2 * nn) + L2(10 * nn) + L3(20 * nn) + L4(10 * nn)
-            + C0(-12 * nn) + C1(-12 * nn) + C2(-12 * nn));
-    }
-    else if (testcase == 3)                                                     // bridge with 7 circles and ellipsoid outltet boundary test case
-    {
-        real r = 0.15;
-
-        border L11(t = -1.0, -0.8){x = t; y = 0; label = 1;}
-        border L12(t = -0.8, 0.8){x = t; y = 0; label = 2;}
-        border L13(t = 0.8, 1.0){x = t; y = 0; label = 1;}
+        //border C1(t = 0, 2 * pi){x = -0.25 + r * cos(t); y = 0.95 + r * sin(t); label = 3;}
+        // border C2(t = 0, 2 * pi){x = r * cos(t); y = 0.95 + r * sin(t); label = 3;}
+        // border C3(t = 0, 2 * pi){x = 0.25 + r * cos(t); y = 0.95 + r * sin(t); label = 3;}
         
-        border C(t = 0, pi){x = cos(t); y = 0.8 * sin(t); label = 3;}
-        
-        border C10(t = 0, 2 * pi){x = -0.75 + r * cos(t); y = 0.175 + r * sin(t); label = 3;}
-        border C11(t = 0, 2 * pi){x = -0.375 + r * cos(t); y = 0.175 + r * sin(t); label=3;}
-        border C12(t = 0, 2 * pi){x = r * cos(t); y = 0.175 + r * sin(t); label=3;}
-        border C13(t = 0, 2 * pi){x = 0.375 + r * cos(t); y = 0.175 + r * sin(t); label=3;}
-        border C14(t = 0, 2 * pi){x = 0.75 + r * cos(t); y = 0.175 + r * sin(t); label=3;}
-        border C21(t = 0, 2 * pi){x = -0.5625 + r * cos(t); y = 0.45 + r * sin(t); label=3;}
-        border C22(t = 0, 2 * pi){x = 0.5625 + r * cos(t); y = 0.45 + r * sin(t); label=3;}
-        border C23(t = 0, 2 * pi){x = -0.1875 + r * cos(t); y = 0.6 + r * sin(t); label=3;}
-        border C24(t = 0, 2 * pi){x = 0.1875 + r * cos(t); y = 0.6 + r * sin(t); label=3;}
+        border L61(t = 0, 0.2){x = -0.2; y = 0.85 + t; label = 3;}
+        border L62(t = 0, 0.1){x = -0.2 - t; y = 1.05 - t; label = 3;}
+        border L63(t = 0, 0.1){x = -0.3 + t; y = 0.95 - t; label = 3;}
 
-        Th = buildmesh(L11(2 * nn) + L12(16 * nn) + L13(2 * nn) + C(30 * nn)
-            + C10(-12 * nn) + C11(-12 * nn) + C12(-12 * nn) + C13(-12 * nn) + C14(-12 * nn)
-            + C21(-12 * nn) + C22(-12 * nn) + C23(-12 * nn) + C24(-12 * nn)
-            );
+        border L71(t = 0, 0.2){x = 0.2; y = 1.05 - t; label = 3;}
+        border L72(t = 0, 0.1){x = 0.2 + t; y = 0.85 + t; label = 3;}
+        border L73(t = 0, 0.1){x = 0.3 - t; y = 0.95 + t; label = 3;}
+
+        border L81(t = 0, 0.2){x = -0.1 + t; y = 0.85; label = 3;}
+        border L82(t = 0, 0.2){x = 0.1; y = 0.85 + t; label = 3;}
+        border L83(t = 0, 0.2){x = 0.1 - t; y = 1.05; label = 3;}
+        border L84(t = 0, 0.2){x = -0.1; y = 1.05 - t; label = 3;}
+
+        Th = buildmesh(L11(8 * nn) + L21(4 * nn) + L31(2 * nn) + L41(8 * nn) 
+                + L51(nn) + L52(2 * nn) + L53(2 * nn) + L54(2 * nn) + L55(nn) + L42(8 * nn) + L34(2 * nn) + L22(4 * nn)
+                + L61(-2 * nn) + L62(-2 * nn) + L63(-2 * nn)
+                + L71(-2 * nn) + L72(-2 * nn) + L73(-2 * nn)
+                + L81(-2 * nn) + L82(-2 * nn) + L83(-2 * nn) + L84(-2 * nn) 
+                );
     }
 }
 
