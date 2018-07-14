@@ -25,7 +25,7 @@ macro RegExLaplaceBeltrami()
     int2d(Th)(gm * tr(EPS(tta1, tta2)) * EPS(eta1, eta2))
     + int1d(Th,3)((1 - gm) * (tr(gradT(tta1)) * gradT(eta1) + tr(gradT(tta2)) * gradT(eta2)))
     + int1d(Th,3)(dL * tr([eta1, eta2]) * [N.x, N.y])
-    + on(1, 2, tta1 = 0, tta2 = 0);
+    + on(1, 2, 4, tta1 = 0, tta2 = 0);
 } //EOM
 
 macro RegExElliptic() 
@@ -34,7 +34,7 @@ macro RegExElliptic()
     int2d(Th)(gm * tr(EPS(tta1, tta2)) * EPS(eta1, eta2))
 	  + int2d(Th)(tta1 * eta1 + tta2 * eta2)
     + int1d(Th, 3)(dL * tr([eta1, eta2]) * [N.x, N.y])
-    + on(1, 2, tta1 = 0, tta2 = 0);
+    + on(1, 2, 4, tta1 = 0, tta2 = 0);
 } //EOM
 
 
@@ -50,7 +50,8 @@ macro Streamlines()
 macro Elastic()
 {
   solve el([u1, u2], [v1, v2]) =
-    int2d(Th)(lambda * div(u1, u2) * div(v1, v2) + 2. * mu * (tr(EPS(u1, u2)) * EPS(v1,v2))) 
-    - int1d(Th, 2)(-1 * v2)
+    int2d(Th)(lambda * div(u1, u2) * div(v1, v2) + 2.0 * mu * (tr(EPS(u1, u2)) * EPS(v1,v2))) 
+    - int1d(Th, 2)(g1 * v1 + g2 * v2)
+    - int1d(Th, 4)(gg1 * v1 + gg2 * v2)
     + on(1, u1 = 0, u2 = 0);
 } //EOM
