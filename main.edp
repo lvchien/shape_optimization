@@ -14,10 +14,6 @@ macro dJ() (dCmp) //EOM                                       /* Derivative of o
 macro Constr(Th) (Vol(Th)) //EOM                              /* Constraint function */ 
 macro dCon() (dVol) //EOM                                     /* Derivative of constraint function */
 
-macro SolveStateSystem() Elastic //EOM
-macro SolveAdjointSystem() {;} //EOM
-macro SolveRegEx() RegExElliptic //EOM
-
 macro L() (augLagrange) //EOM
 macro dL()  (dAugLagrange)  //EOM
 
@@ -35,6 +31,7 @@ string outputFolder = getARGV("--resu", "");                // The output direct
 int save = getARGV("--save", 1);                            // 1 = save all results, 0 = save nothing at all
 int ns = getARGV("--ns", 3);                                // Number of time steps to save results once
 int augLag = getARGV("--augLag", 1);                        // 1 = Augmented Lagrange, 0 = Common Lagrange
+int regex = getARGV("--regex", 0);                          // 0 = Elliptic, 1 = Laplace Beltrami operator
 
 
 /* Numerical parameters */
@@ -58,7 +55,7 @@ real nu = getARGV("--nu", 0.3);                             // The Poisson ratio
 
 
 /* Iterators */
-int jmax = getARGV("--jmax", 1000);
+int jmax = getARGV("--jmax", 2000);
 int kmax = getARGV("--kmax", 5);
 
 
@@ -88,7 +85,7 @@ fespace Qh(Th, P1);
 
 
 /* Variables */
-Vh u1, u2, v1, v2, w1, w2, udc1, udc2;
+Vh u1, u2, v1, v2, w1, w2, udc1, udc2, g1, g2, gg1, gg2;
 Qh p, q, qq, tta1, tta2, eta1, eta2, phi, psi;
 int j, k;
 real b = b0;
@@ -147,6 +144,10 @@ else if (config == 2)
 {
   mu = E/(2 * (1 + nu));
   lambda = E * nu/((1 + nu) * (1 - 2 * nu));
+  g1 = 0;
+  g2 = -1;
+  gg1 = 0;
+  gg2 = 1;
 }
 
 
@@ -228,9 +229,14 @@ for (j = 0; j < jmax; j++)
     cout << "Iteration " << j << "/" << jmax << " (testcase " << testcase << ")" << endl;
   }
 
-  if (k == kmax || sgn < errc) 
+  if (sgn < errc) 
   {
     cout << "Shape will not be changed furthermore! The process will be ended here!" << endl;
+    break;
+  }
+  else if (k == kmax)
+  {
+    cout << "There is an issue with ADAPTMESH!" << endl;
     break;
   }
   else
