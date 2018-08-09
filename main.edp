@@ -199,7 +199,7 @@ for (j = 0; j < jmax; j++)
     real L1 = L;                                                                          // value of Lagrange function after move mesh
     cout << "After deformation: L = " << L1 << " / before L0 = " << L0 << " (variation = " << 100 * (L1 - L0)/L0 << "%)" << endl;
 
-    if (L1 <= L0 +  sm * gradLxTta)                                                                          // accept this deformation
+    if (L1 <= L0 +  sm * gradLxTta)                                                       // Armijo condition                                                                   // accept this deformation
       {
         break;
       }
