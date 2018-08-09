@@ -14,7 +14,7 @@ macro dJ() (dCmp) //EOM                                       /* Derivative of o
 macro Constr(Th) (Vol(Th)) //EOM                              /* Constraint function */ 
 macro dCon() (dVol) //EOM                                     /* Derivative of constraint function */
 
-macro L() (augLagrange) //EOM
+macro L() (augLagrange) //EOM                                 /* Lagrange function approach */
 macro dL()  (dAugLagrange)  //EOM
 
 
@@ -39,7 +39,9 @@ real cr = getARGV("--cr", 1.);                              // Ratio of constrai
 real b0 = getARGV("--b0", 1e-2);                            // Initial value of penalty coefficient b
 real bmax = getARGV("--bmax", 1e1);                         // Maximal value of penalty coefficient b, no longer update if b > bmax
 real l0 = getARGV("--l0", 0);                               // Initial value of the Lagrange multiplier l
-real tau = getARGV("--tau", 1e-2);                          // Descent step
+real tau = getARGV("--tau", 1e-2);                          // Initial step length
+real beta = getARGV("--beta", 0.5);                         // Backtracking coefficient
+real sm = getARGV("--sm", 1e-4);                            // Armijo condition's coefficient
 real alpha = getARGV("--alpha", 1.05);                      // Update coefficient of b : b^{n+1} = alpha*b^n
 real errc = getARGV("--errc", 1e-2);                        // Value for the stopping criterion \eps_{stop} on the residual
 real gm = getARGV("--gm", 1.);                              // Value of the regularization parameter
@@ -176,7 +178,7 @@ for (j = 0; j < jmax; j++)
 
   for (k = 0; k < kmax; k++) 
   {
-    cout << "movemesh descent step = "<< tau1 << endl;
+    cout << "movemesh step length = "<< tau1 << endl;
     real minarea1 = checkmovemesh(Th, [x + tau1 * tta1, y + tau1 * tta2]);
     int remeshcount = 0;
 
@@ -197,13 +199,13 @@ for (j = 0; j < jmax; j++)
     real L1 = L;                                                                          // value of Lagrange function after move mesh
     cout << "After deformation: L = " << L1 << " / before L0 = " << L0 << " (variation = " << 100 * (L1 - L0)/L0 << "%)" << endl;
 
-    if (L1 < L0)                                                                          // accept this deformation
+    if (L1 <= L0 +  sm * gradLxTta)                                                                          // accept this deformation
       {
         break;
       }
-    else                                                                                   // reset mesh and decrease descent step
+    else                                                                                  // reset mesh and decrease descent step
       {
-        tau1 /= 2;
+        tau1 *= beta;
         Th = Th1;
       }
   } 
