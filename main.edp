@@ -39,8 +39,8 @@ real cr = getARGV("--cr", 1.);                              // Ratio of constrai
 real b0 = getARGV("--b0", 1e-2);                            // Initial value of penalty coefficient b
 real bmax = getARGV("--bmax", 1e1);                         // Maximal value of penalty coefficient b, no longer update if b > bmax
 real l0 = getARGV("--l0", 0);                               // Initial value of the Lagrange multiplier l
-real tau = getARGV("--tau", 1e-2);                          // Initial step length
-real beta = getARGV("--beta", 0.5);                         // Backtracking coefficient
+real tau = getARGV("--tau", 1e-2);                          // Step length
+real beta = getARGV("--beta", 0.5);                         // Armijo backtracking coefficient
 real sm = getARGV("--sm", 1e-4);                            // Armijo condition's coefficient
 real alpha = getARGV("--alpha", 1.05);                      // Update coefficient of b : b^{n+1} = alpha*b^n
 real errc = getARGV("--errc", 1e-2);                        // Value for the stopping criterion \eps_{stop} on the residual
@@ -58,7 +58,7 @@ real nu = getARGV("--nu", 0.3);                             // The Poisson ratio
 
 /* Iterators */
 int jmax = getARGV("--jmax", 2000);
-int kmax = getARGV("--kmax", 5);
+int kmax = getARGV("--kmax", 20);
 
 
 /* Load mesh */
@@ -199,11 +199,11 @@ for (j = 0; j < jmax; j++)
     real L1 = L;                                                                          // value of Lagrange function after move mesh
     cout << "After deformation: L = " << L1 << " / before L0 = " << L0 << " (variation = " << 100 * (L1 - L0)/L0 << "%)" << endl;
 
-    if (L1 <= L0 +  sm * gradLxTta)                                                       // Armijo condition                                                                   // accept this deformation
+    if (L1 <= L0 + sm * tau1 * gradLxTta)                                                 // Armijo condition
       {
         break;
       }
-    else                                                                                  // reset mesh and decrease descent step
+    else                                                                                   // reset mesh and decrease descent step
       {
         tau1 *= beta;
         Th = Th1;
