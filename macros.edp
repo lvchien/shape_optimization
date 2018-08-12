@@ -4,7 +4,7 @@ macro div(u1, u2) (dx(u1) + dy(u2)) // EOM                  /* div operator */
 macro EPS(u1, u2) [dx(u1), 1./2 * (dx(u2) + dy(u1)), 1./2 * (dx(u2) + dy(u1)), dy(u2)] // EOM           /* strain tensor */
 macro AEPS(u1, u2) [2. * mu * dx(u1) + lambda * div(u1, u2), mu * (dx(u2) + dy(u1)), mu * (dx(u2) + dy(u1)), 2. * mu * dy(u2) + lambda * div(u1, u2)] //EOM           /* Hooke's law */
 macro gradT(u) (grad(u) - grad(u)' * [N.x, N.y] * [N.x, N.y]) // EOM                                    /* tangent gradient */                 
-macro gradLxTta() (int1d(Th, 3)(dL * tr([tta1, tta2]) * [N.x, N.y])) //EOM
+macro gradLxTta() (int1d(Th, 3)(dL * tr([tta1, tta2]) * [N.x, N.y])) //EOM                              /* Derivative of L along theta direction */
 
 
 /* Constraint functions */

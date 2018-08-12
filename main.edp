@@ -39,15 +39,15 @@ real cr = getARGV("--cr", 1.);                              // Ratio of constrai
 real b0 = getARGV("--b0", 1e-2);                            // Initial value of penalty coefficient b
 real bmax = getARGV("--bmax", 1e1);                         // Maximal value of penalty coefficient b, no longer update if b > bmax
 real l0 = getARGV("--l0", 0);                               // Initial value of the Lagrange multiplier l
-real tau = getARGV("--tau", 1e-2);                          // Step length
-real beta = getARGV("--beta", 0.5);                         // Armijo backtracking coefficient
+real tau = getARGV("--tau", 1e-2);                          // Initial step length
+real betamin = getARGV("--betamin", 0.5);                   // Armijo lower bound coefficient
+real betamax = getARGV("--betamax", 0.7);                   // Armijo upper bound coefficient
 real sm = getARGV("--sm", 1e-4);                            // Armijo condition's coefficient
-real alpha = getARGV("--alpha", 1.05);                      // Update coefficient of b : b^{n+1} = alpha*b^n
+real alpha = getARGV("--alpha", 1.05);                      // Update coefficient of b: b^{n+1} = alpha*b^n
 real errc = getARGV("--errc", 1e-2);                        // Value for the stopping criterion \eps_{stop} on the residual
 real gm = getARGV("--gm", 1.);                              // Value of the regularization parameter
 real minarea = getARGV("--minarea", 1e-4);                  // Remesh parameter: remesh if any element has an area less than minarea
 real meshsize = getARGV("--meshsize",0.03);                 // Required edge size when remeshing : hmax = meshsize, hmin = meshsize/sqrt(2)
-int remesh = getARGV("--remesh", 1);                        // Remesh configuration: 1 = remesh if necessary, 0 = no remeshing
 
 
 /* Problem parameters*/
@@ -58,7 +58,7 @@ real nu = getARGV("--nu", 0.3);                             // The Poisson ratio
 
 /* Iterators */
 int jmax = getARGV("--jmax", 2000);
-int kmax = getARGV("--kmax", 20);
+int kmax = getARGV("--kmax", 30);
 
 
 /* Load mesh */
@@ -87,7 +87,7 @@ fespace Qh(Th, P1);
 
 
 /* Variables */
-Vh u1, u2, v1, v2, w1, w2, udc1, udc2, g1, g2, gg1, gg2;
+Vh u1, u2, v1, v2, w1, w2, udc1, udc2, g1, g2;
 Qh p, q, qq, tta1, tta2, eta1, eta2, phi, psi;
 int j, k;
 real b = b0;
@@ -148,13 +148,11 @@ else if (config == 2)
   lambda = E * nu/((1 + nu) * (1 - 2 * nu));
   g1 = 0;
   g2 = -1;
-  gg1 = 0;
-  gg2 = 1;
 }
 
 
 /////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////    Main   /////////////////////////////////////
+/////////////////////////////////   Main    /////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 
 SolveStateSystem;	    
@@ -170,10 +168,12 @@ for (j = 0; j < jmax; j++)
   SolveStateSystem;
   SolveAdjointSystem;
   SolveRegEx;
+  real prod = gradLxTta;
+  real sgn = sqrt(int1d(Th, 3)(tta1^2 + tta2^2));                                         // L^2 norm of the shape gradient
+  plot(Th, [tta1, tta2], wait = 0, value = 1, cmm = "Iteration " + j + "/" + jmax + " (testcase " + testcase + ")");
 
   real L0 = L;                                                                            // value of Lagrange function before move mesh
   real tau1 = tau;                                                                        // temporary descent step
-
   mesh Th1 = Th;                                                                          // temporary mesh
 
   for (k = 0; k < kmax; k++) 
@@ -182,7 +182,7 @@ for (j = 0; j < jmax; j++)
     real minarea1 = checkmovemesh(Th, [x + tau1 * tta1, y + tau1 * tta2]);
     int remeshcount = 0;
 
-    while (remesh && minarea1 <= minarea && remeshcount <= 5) 
+    while (minarea1 <= minarea && remeshcount <= 5) 
     {
       Th = Th1;
       cout << "*** ADAPTMESH *** current minarea = " << minarea1 << ", required remesh minarea = " << minarea;
@@ -192,25 +192,35 @@ for (j = 0; j < jmax; j++)
     }
 
     Th = movemesh(Th, [x + tau1 * tta1, y + tau1 * tta2]);
+    cout << "Done movemesh" << endl;
+    Th = adaptmesh(Th, hmax = meshsize, hmin = meshsize/sqrt(2), ratio = 1.5);
+    cout << "Done adaptmesh" << endl;
 
     SolveStateSystem;
     SolveAdjointSystem;
 
-    real L1 = L;                                                                          // value of Lagrange function after move mesh
+    real L1 = L;                                                                       // value of Lagrange function after move mesh
     cout << "After deformation: L = " << L1 << " / before L0 = " << L0 << " (variation = " << 100 * (L1 - L0)/L0 << "%)" << endl;
 
-    if (L1 <= L0 + sm * tau1 * gradLxTta)                                                 // Armijo condition
-      {
-        break;
+    if (L1 <= L0 + sm * tau1 * prod)                                                  // Armijo condition
+    {
+      break;
+    }
+    else                                                                              // reset mesh and decrease descent step
+    {
+      real optitau = -prod * tau1 ^ 2 / (2 * (L1 - L0 - prod * tau1));
+      if (optitau < betamin * tau1)
+        tau1 *= betamin;
+      else 
+      { 
+        if (optitau > betamax * tau1)
+          tau1 *= betamax;
+        else
+          tau1 = optitau;
       }
-    else                                                                                   // reset mesh and decrease descent step
-      {
-        tau1 *= beta;
-        Th = Th1;
-      }
-  } 
-
-  real sgn = sqrt(int1d(Th, 3)(tta1^2 + tta2^2));                                         // L^2 norm of the shape gradient
+      Th = Th1;
+    }
+  }
   
   // Update Lagrange multiplier and penalty coefficient
   if (augLag == 1)
@@ -223,11 +233,8 @@ for (j = 0; j < jmax; j++)
 
   if (save && (j % ns == 0)) 
   {
-    plot(Th, [tta1, tta2], wait = 0, value = 1, cmm = "Iteration " + j + "/" + jmax + " (testcase " + testcase + ")");
-    // plot(Th, [u1, u2], wait = 0, value = 1, cmm = "Iteration " + j + "/" + jmax + " (testcase " + testcase + ")");
     savesol(outputFolder + "/mesh." + j/ns + ".sol", Th, [u1, u2]);
     savemesh(Th, outputFolder + "/mesh." + j/ns + ".mesh");
-    fout.flush;
     cout << "Iteration " << j << "/" << jmax << " (testcase " << testcase << ")" << endl;
   }
 
