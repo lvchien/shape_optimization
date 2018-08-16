@@ -95,8 +95,7 @@ else if (config == 2)
         border L42(t = 0.9, 0.1){x = 0.0; y = t; label = 3;}
         border L43(t = 0.1, 0.0){x = 0.0; y = t; label = 1;}
 
-        Th = buildmesh(L11(5 * nn) + L21(5 * nn) + L22(1 * nn) + L23(5 * nn) + L31(5 * nn) + L41(1 * nn) + L42(8 * nn) + L43(1 * nn)
-            );
+        Th = buildmesh(L11(5 * nn) + L21(5 * nn) + L22(1 * nn) + L23(5 * nn) + L31(5 * nn) + L41(1 * nn) + L42(8 * nn) + L43(1 * nn));
     }
     else if (testcase == 2)                                                     // long cantilever test case
     {
