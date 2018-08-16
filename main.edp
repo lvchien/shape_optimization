@@ -32,6 +32,7 @@ int save = getARGV("--save", 1);                            // 1 = save all resu
 int ns = getARGV("--ns", 3);                                // Number of time steps to save results once
 int augLag = getARGV("--augLag", 1);                        // 1 = Augmented Lagrange, 0 = Common Lagrange
 int regex = getARGV("--regex", 0);                          // 0 = Elliptic, 1 = Laplace Beltrami operator
+int move = getARGV("--move", 0);                            // 0 = fixed initial descent step length, 1 = fixed move step length
 
 
 /* Numerical parameters */
@@ -39,7 +40,8 @@ real cr = getARGV("--cr", 1.);                              // Ratio of constrai
 real b0 = getARGV("--b0", 1e-2);                            // Initial value of penalty coefficient b
 real bmax = getARGV("--bmax", 1e1);                         // Maximal value of penalty coefficient b, no longer update if b > bmax
 real l0 = getARGV("--l0", 0);                               // Initial value of the Lagrange multiplier l
-real tau = getARGV("--tau", 1e-2);                          // Initial step length
+real tau = getARGV("--tau", 1e-2);                          // Initial descent step length
+real movestep = getARGV("--movestep", 1e-2);                // Fixed move step length
 real betamin = getARGV("--betamin", 0.5);                   // Armijo lower bound coefficient
 real betamax = getARGV("--betamax", 0.7);                   // Armijo upper bound coefficient
 real sm = getARGV("--sm", 1e-4);                            // Armijo condition's coefficient
@@ -173,7 +175,18 @@ for (j = 0; j < jmax; j++)
   plot(Th, [tta1, tta2], wait = 0, value = 1, cmm = "Iteration " + j + "/" + jmax + " (testcase " + testcase + ")");
 
   real L0 = L;                                                                            // value of Lagrange function before move mesh
-  real tau1 = tau;                                                                        // temporary descent step
+  real tau1;
+
+  if (move == 0)
+  {
+    tau1 = tau;                                                                      // temporary descent step
+  }
+  else if(move == 1)
+  {
+    Qh normtta = sqrt(tta1^2 + tta2^2);
+    tau1 = movestep / normtta[].max;
+  }
+
   mesh Th1 = Th;                                                                          // temporary mesh
 
   for (k = 0; k < kmax; k++) 
