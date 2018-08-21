@@ -167,34 +167,7 @@ else if (config == 2)
             + C10(-15 * nn) + C11(-15 * nn) + C12(-15 * nn) 
             );
     }
-    else if (testcase == 5)                                                     // multi-loads bridge test case
-    {
-        real r = 0.15;
-
-        border L11(t = -1.0, -0.95){x = t; y = 0; label = 1;}
-        border L12(t = -0.95, -0.55){x = t; y = 0; label = 3;}
-        border L13(t = -0.55, -0.45){x = t; y = 0; label = 2;}
-        border L14(t = -0.45, -0.05){x = t; y = 0; label = 3;}
-        border L15(t = -0.05, 0.05){x = t; y = 0; label = 2;}
-        border L16(t = 0.05, 0.45){x = t; y = 0; label = 3;}
-        border L17(t = 0.45, 0.55){x = t; y = 0; label = 2;}
-        border L18(t = 0.55, 0.95){x = t; y = 0; label = 3;}
-        border L19(t = 0.95, 1.0){x = t; y = 0; label = 1;}
-        
-        border L21(t = 0, 0.8){x = 1.0; y = t; label = 3;}
-        border L22(t = 1.0, -1.0){x = t; y = 0.8; label = 3;}
-        border L23(t = 0.8, 0){x = -1.0; y = t; label = 3;}
-        
-        border C10(t = 0, 2 * pi){x = -0.6 + r * cos(t); y = 0.4 + r * sin(t); label = 3;}
-        border C11(t = 0, 2 * pi){x = r * cos(t); y = 0.4 + r * sin(t); label = 3;}
-        border C12(t = 0, 2 * pi){x = 0.6 + r * cos(t); y = 0.4 + r * sin(t); label = 3;}
-
-        Th = buildmesh(L11(1 * nn) + L12(4 * nn) + L13(1 * nn) + L14(4 * nn) + L15(1 * nn) + L16(4 * nn) + L17(1 * nn) + L18(4 * nn) + L19(1 * nn) 
-                        + L21(12 * nn) + L22(20 * nn) + L23(12 * nn) 
-                        + C10(-10 * nn) + C11(-10 * nn) + C12(-10 * nn) 
-                        );
-    }
-    else if (testcase == 6)                                                    // mast test case
+    else if (testcase == 5)                                                    // mast test case
     {
         real r = 0.05;
 
@@ -217,10 +190,10 @@ else if (config == 2)
 
         Th = buildmesh(L11(8 * nn) + L21(4 * nn) + L31(1 * nn) + L32(2 * nn) + L41(8 * nn) 
                 + L51(nn) + L52(3 * nn) + L53(1 * nn) + L42(8 * nn) + L33(2 * nn) + L34(1 * nn) + L22(4 * nn)
-                + C1(-5 * nn) + C2(-5 * nn) + C3(-5 * nn)
+                + C1(-7 * nn) + C2(-7 * nn) + C3(-7 * nn)
                 );
     }
-    else if(testcase == 7)                                                      // L-beam test case
+    else if(testcase == 6)                                                      // L-beam test case
     {
         real r = 0.05;
 
@@ -242,24 +215,6 @@ else if (config == 2)
         Th = buildmesh(L1(10 * nn) + L21(2 * nn) + L22(1 * nn) + L23(2 * nn) + L3(6 * nn) + L4(6 * nn)
                 + L51(1 * nn) + L52(2 * nn) + L53(1 * nn) + L6(10 * nn)
                 + C71(-5 * nn) + C72(-5 * nn) + C73(-5 * nn)
-                );
-    }
-    else if(testcase == 8)                                                      // optimal radiator (P.209 Conception optimale de structures)
-    {
-        real r = 0.15;
-
-        border L11(t = 0.0, 0.1){x = t; y = 0.0; label = 1;}
-        border L12(t = 0.1, 0.9){x = t; y = 0.0; label = 3;}
-        border L13(t = 0.9, 1.0){x = t; y = 0.0; label = 1;}
-        border L2(t = 0, 1.0){x = 1.0; y = t; label = 3;}
-        border L3(t = 1.0, 0.0){x = t; y = 1.0; label = 2;}
-        border L4(t = 1.0, 0.0){x = 0.0; y = t; label = 3;}
-
-        border C51(t = 0, 2 * pi){x = 0.3 + r * cos(t); y = 0.5+ r * sin(t); label = 3;}
-        border C52(t = 0, 2 * pi){x = 0.7 + r * cos(t); y = 0.5 + r * sin(t); label = 3;}
-
-        Th = buildmesh(L11(1 * nn) + L12(8 * nn) + L13(1 * nn) + L2(10 * nn) + L3(10 * nn) + L4(10 * nn)
-                + C51(-10 * nn) + C52(-10 * nn)
                 );
     }
 }
