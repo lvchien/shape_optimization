@@ -1,13 +1,13 @@
 # Shape optimization
-This project is an implementation of the numerical algorithm for shape optimization problems for mechanics models, such as Stokes flow and linear elastic structure. The program is written in Freefem++ tool using finite element method (FEM).
+This project is an implementation of the numerical algorithm of shape optimization problems for mechanics models, such as Stokes flow and linear elastic structure. The program is written in Freefem++ tool using finite element method (FEM).
 
 ### Freefem++ installation
-First, you must install recent [Freefem++](http://www.freefem.org/ff++/). This program was written with version Freefem++ 3.47. 
+Firstly, you should install most recent [Freefem++](http://www.freefem.org/ff++/). This program was written with version Freefem++ 3.47. 
 
 ### Clone this repository
 You can download the zip at [here](https://github.com/lvchien/shape_optimization/archive/master.zip) or clone this repository by git command
 ```
-https://github.com/lvchien/shape_optimization.git
+git clone https://github.com/lvchien/shape_optimization.git
 ```
 
 ### Usage
@@ -18,7 +18,7 @@ Freefem++ genMesh.edp [--config numconfig] [--testcase numtestcase] [--meshname 
 ```
 
 #### Run main algorithm:
-First, we have to setting problem's configurations by redefine macros:
+Firstly, we should change problem's configurations by redefine macros:
 1. Objective funtion **J** and its derivative **dJ**
 2. Constraint function **Constr**  and its derivative **dCon**
 3. Lagrange function **L** and its derivative **dL**
@@ -30,7 +30,7 @@ Freefem++ main.edp [--config numconfig] [--testcase numtestcase] [--meshname "na
 ```
 where basic options are
 ```
---config      the configuration (1 for Stokes flow problems, 2 for linear elastic problem, so on )
+--config      the configuration (1 for Stokes flow problem, 2 for linear elastic problem, so on )
 --testcase    the test case of problems (e.g. for Stokes problems, 1 = pipe, 2 = diffuser, 3 = double pipe, 4 = obstacle, 5 = human lung)
 --meshname    the name of mesh file (e.g. pipe)
 --resu        the results directory (created if non-existent)
@@ -43,7 +43,7 @@ and numerical parameters are listed below:
 --bmax        Maximal value of penalty coefficient b, no longer update if b > bmax
 --l0          Initial value of the Lagrange multiplier l
 --tau         Descent step
---alpha       Update coefficient of b : b^{n+1} = alpha*b^n (Must be greater than 1)
+--alpha       Update coefficient of b : b^{n+1} = alpha*b^n (must be greater than 1)
 --errc        Value for the stopping criterion \eps_{stop} on the residual
 --gm          The regularization parameter
 --remesh      Remesh configuration: 1 = remesh if necessary, 0 = no remeshing
@@ -53,7 +53,7 @@ and numerical parameters are listed below:
 and problem's parameters:
 ```
 --mu          The constant kinematic viscosity of the fluid (only for flow problem)
---E           The Young modulus of material (only for elastic problem)
+--E           The Young modulus of elastic material (only for elastic problem)
 --nu          The Poisson ratio (only for elastic problem)
 ```
 
