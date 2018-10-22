@@ -192,30 +192,6 @@ else if (config == 2)
                 + C1(-7 * nn) + C2(-7 * nn) + C3(-7 * nn)
                 );
     }
-    else if(testcase == 6)                                                      // L-beam test case
-    {
-        real r = 0.05;
-
-        border L1(t = 0.0, 1.0){x = t; y = 0.0; label = 3;}
-        border L21(t = 0.0, 0.18){x = 1.0; y = t; label = 3;}
-        border L22(t = 0.18, 0.22){x = 1.0; y = t; label = 2;}
-        border L23(t = 0.22, 0.4){x = 1.0; y = t; label = 3;}
-        border L3(t = 1.0, 0.4){x = t; y = 0.4; label = 3;}
-        border L4(t = 0.4, 1.0){x = 0.4; y = t; label = 3;}
-        border L51(t = 0.4, 0.3){x = t; y = 1.0; label = 1;}
-        border L52(t = 0.3, 0.1){x = t; y = 1.0; label = 3;}
-        border L53(t = 0.1, 0.0){x = t; y = 1.0; label = 1;}
-        border L6(t = 1.0, 0.0){x = 0.0; y = t; label = 3;}
-
-        border C71(t = 0, 2 * pi){x = 0.2 + r * cos(t); y = 0.2 + r * sin(t); label = 3;}
-        border C72(t = 0, 2 * pi){x = 0.5 + r * cos(t); y = 0.2 + r * sin(t); label = 3;}
-        border C73(t = 0, 2 * pi){x = 0.8 + r * cos(t); y = 0.2 + r * sin(t); label = 3;}
-
-        Th = buildmesh(L1(10 * nn) + L21(2 * nn) + L22(1 * nn) + L23(2 * nn) + L3(6 * nn) + L4(6 * nn)
-                + L51(1 * nn) + L52(2 * nn) + L53(1 * nn) + L6(10 * nn)
-                + C71(-5 * nn) + C72(-5 * nn) + C73(-5 * nn)
-                );
-    }
 }
 
 savemesh(Th, "meshes/" + meshname + ".mesh");

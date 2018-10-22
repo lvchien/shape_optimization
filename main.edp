@@ -6,7 +6,7 @@ load "medit";
 cout.precision(12);
 
 /////////////////////////////////////////////////////////////////////////////////
-///////////////////    Problem Configuration (Change here)  /////////////////////
+/////////////////////////    Problem Configuration    ///////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 
 macro J() (Cmp) //EOM                                         /* Objective function */
@@ -15,7 +15,7 @@ macro Constr(Th) (Vol(Th)) //EOM                              /* Constraint func
 macro dCon() (dVol) //EOM                                     /* Derivative of constraint function */
 
 macro L() (augLagrange) //EOM                                 /* Lagrange function approach */
-macro dL()  (dAugLagrange)  //EOM
+macro dL()  (dAugLagrange)  //EOM                             /* Derivative of Lagrange function */
 
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -24,15 +24,15 @@ macro dL()  (dAugLagrange)  //EOM
 
 
 /* Config parameters */
-int config = getARGV("--config", 1);                        // Configuration: 1 for Stokes, 2 for elastic, so on
+int config = getARGV("--config", 1);                        // Configuration: 1 for Stokes flows, 2 for elastic structures
 int testcase = getARGV("--testcase", 1);                    // test case
 string meshname = getARGV("--meshname", "");                // name of mesh file
-string outputFolder = getARGV("--resu", "");                // The output directory
+string outputFolder = getARGV("--resu", "");                // output directory
 int save = getARGV("--save", 1);                            // 1 = save all results, 0 = save nothing at all
-int ns = getARGV("--ns", 3);                                // Number of time steps to save results once
+int ns = getARGV("--ns", 3);                                // number of time steps to save results once
 int augLag = getARGV("--augLag", 1);                        // 1 = Augmented Lagrange, 0 = Common Lagrange
-int regex = getARGV("--regex", 0);                          // 0 = Elliptic, 1 = Laplace Beltrami operator
-int move = getARGV("--move", 0);                            // 0 = fixed initial descent step length, 1 = fixed move step length
+int regex = getARGV("--regex", 0);                          // 0 = Elliptic, 1 = tangential gradient
+int move = getARGV("--move", 0);                            // 0 = fixed initial descent step length, 1 = fixed moving length
 
 
 /* Numerical parameters */
@@ -41,9 +41,8 @@ real b0 = getARGV("--b0", 1e-2);                            // Initial value of 
 real bmax = getARGV("--bmax", 1e1);                         // Maximal value of penalty coefficient b, no longer update if b > bmax
 real l0 = getARGV("--l0", 0);                               // Initial value of the Lagrange multiplier l
 real tau = getARGV("--tau", 1e-2);                          // Initial descent step length
-real movestep = getARGV("--movestep", 1e-2);                // Fixed move step length
-real betamin = getARGV("--betamin", 0.5);                   // Armijo lower bound coefficient
-real betamax = getARGV("--betamax", 0.7);                   // Armijo upper bound coefficient
+real movestep = getARGV("--movestep", 1e-2);                // Fixed moving length
+real beta = getARGV("--beta", 0.7);                         // Armijo step length update coefficient
 real sm = getARGV("--sm", 1e-4);                            // Armijo condition's coefficient
 real alpha = getARGV("--alpha", 1.05);                      // Update coefficient of b: b^{n+1} = alpha*b^n
 real errc = getARGV("--errc", 1e-2);                        // Value for the stopping criterion \eps_{stop} on the residual
@@ -175,11 +174,11 @@ for (j = 0; j < jmax; j++)
   plot(Th, [tta1, tta2], wait = 0, value = 1, cmm = "Iteration " + j + "/" + jmax + " (testcase " + testcase + ")");
 
   real L0 = L;                                                                            // value of Lagrange function before move mesh
-  real tau1;
+  real tau1;                                                                              // temporary descent step
 
   if (move == 0)
   {
-    tau1 = tau;                                                                      // temporary descent step
+    tau1 = tau;                                                                           
   }
   else if(move == 1)
   {
@@ -198,7 +197,7 @@ for (j = 0; j < jmax; j++)
     while (minarea1 <= minarea && remeshcount <= 5) 
     {
       Th = Th1;
-      cout << "*** ADAPTMESH *** current minarea = " << minarea1 << ", required remesh minarea = " << minarea;
+      cout << "*** ADAPTMESH *** current minarea = " << minarea1 << ", required remeshing minarea = " << minarea;
       Th = adaptmesh(Th, hmax = meshsize, hmin = meshsize/sqrt(2), ratio = 1.5);
       remeshcount ++;
       minarea1 = checkmovemesh(Th, [x + tau1 * tta1, y + tau1 * tta2]);
@@ -221,16 +220,7 @@ for (j = 0; j < jmax; j++)
     }
     else                                                                              // reset mesh and decrease descent step
     {
-      real optitau = -prod * tau1 ^ 2 / (2 * (L1 - L0 - prod * tau1));
-      if (optitau < betamin * tau1)
-        tau1 *= betamin;
-      else 
-      { 
-        if (optitau > betamax * tau1)
-          tau1 *= betamax;
-        else
-          tau1 = optitau;
-      }
+      tau1 *= beta;
       Th = Th1;
     }
   }
@@ -241,6 +231,8 @@ for (j = 0; j < jmax; j++)
     l = l - b * (Constr(Th) - constrtarget)/constr0;
     if (b < bmax)
       b *= alpha;
+    else
+      b = bmax;
   }
 
 
@@ -253,12 +245,12 @@ for (j = 0; j < jmax; j++)
 
   if (sgn < errc) 
   {
-    cout << "Shape will not be changed furthermore! The process will be ended here!" << endl;
+    cout << " The shape has not been changed significant! The process should be stopped!" << endl;
     break;
   }
   else if (k == kmax)
   {
-    cout << "There is an issue with ADAPTMESH!" << endl;
+    cout << "ADAPTMESH process raises any issues!" << endl;
     break;
   }
   else
