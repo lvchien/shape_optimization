@@ -13,7 +13,8 @@ macro SolveStateSystem()
     solve Elastic([u1, u2], [v1, v2]) =
       int2d(Th)(lambda * div(u1, u2) * div(v1, v2) + 2.0 * mu * (tr(EPS(u1, u2)) * EPS(v1,v2))) 
       - int1d(Th, 2)(g1 * v1 + g2 * v2)
-      + on(1, u1 = 0, u2 = 0);
+      + on(1, u1 = 0, u2 = 0)
+      + on(4, u2 = 0);
   }
 } //EOM
 

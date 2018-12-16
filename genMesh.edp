@@ -1,12 +1,12 @@
 /* Setting for the label of borders: 
     1 for non-homogeneous Dirichlet boudary, 
     2 for Neumann boundary 
-    3 for homogeneous Dirichlet boundary 
+    3 for homogeneous Dirichlet boundary (free parts of boundary)
     4 for addtional Neumann boudary */
 
 include "getARGV.idp"
 
-int config = getARGV("--config", 1);                    // configuration: 1 for Stokes, 2 for elastic, so on
+int config = getARGV("--config", 1);                    // configuration: 1 for Stokes problem, 2 for elastic problem
 int testcase = getARGV("--testcase", 1);                // test case
 int nn = getARGV("--nn", 10);                           // number of meshing points
 string meshname = getARGV("--meshname", "");            // name of mesh file
@@ -50,7 +50,7 @@ if (config == 1)
         border fr11(t = 0.25, 0){x = 0; y = t; label = 1;}
 
         Th= buildmesh(fr0(3 * nn) + fr1(3 * nn) + fr2(nn) + fr3(2 * nn) + fr4(2 * nn) + fr5(nn) 
-                    + fr6(3 * nn) + fr7(3 * nn) + fr8(nn) + fr9(2 * nn) + fr10(2 * nn) + fr11(nn));
+            + fr6(3 * nn) + fr7(3 * nn) + fr8(nn) + fr9(2 * nn) + fr10(2 * nn) + fr11(nn));
     }
     else if (testcase == 4)                                                     // obstacle test case
     {
@@ -78,7 +78,7 @@ if (config == 1)
         border fr11(t = 2.0/3, 1.0/3){x = 0; y = t; label = 2;}
 
         Th= buildmesh(fr0(5 * nn) + fr1(2 * nn) + fr2(nn) + fr3(nn) + fr4(nn) + fr5(2 * nn) 
-                    + fr6(nn) + fr7(nn) + fr8(nn) + fr9(2 * nn) + fr10(5 * nn) + fr11(2 * nn));
+            + fr6(nn) + fr7(nn) + fr8(nn) + fr9(2 * nn) + fr10(5 * nn) + fr11(2 * nn));
     }
 }
 else if (config == 2)
@@ -188,9 +188,27 @@ else if (config == 2)
         border C3(t = 0, 2 * pi){x = 0.25 + r * cos(t); y = 1.0 + r * sin(t); label = 3;}
 
         Th = buildmesh(L11(8 * nn) + L21(4 * nn) + L31(1 * nn) + L32(2 * nn) + L41(8 * nn) 
-                + L51(nn) + L52(3 * nn) + L53(1 * nn) + L42(8 * nn) + L33(2 * nn) + L34(1 * nn) + L22(4 * nn)
-                + C1(-7 * nn) + C2(-7 * nn) + C3(-7 * nn)
-                );
+            + L51(nn) + L52(3 * nn) + L53(1 * nn) + L42(8 * nn) + L33(2 * nn) + L34(1 * nn) + L22(4 * nn)
+            + C1(-7 * nn) + C2(-7 * nn) + C3(-7 * nn)
+            );
+    }
+    else if(testcase == 6)                                                     // grip test case
+    {
+        border L1(t = 3,-3){x = 0; y = t; label = 3;}
+        border L21(t = 0, 1){x = t; y = -3; label = 2;}		
+        border L22(t = 0, 1){x = 1 + 5 * t;y = -3 + 2.5 * t; label = 3;}
+        border L31(t = 6, 5){x = t; y = -0.5; label = 4;}                       //Teeth of the grip
+        border L32(t = -0.5, 0.5){x = 5; y = t; label = 3;}
+        border L33(t = 5, 6){x = t; y = 0.5; label = 4;}
+        border L41(t = 1, 0){x = 1 + 5 * t; y = 3 - 2.5 * t; label = 3;}
+        border L42(t = 1, 0){x = t; y = 3; label = 2;}		
+        border C1(t = 0, 2 * pi){x = cos(t) * 0.2 + 3; y = sin(t) * 0.2; label = 1;}
+        border C21(t = 0, 2 * pi){x = cos(t) * 0.5 + 2.0; y = sin(t) * 0.5 + 1.5; label = 3;}
+        border C22(t = 0, 2 * pi){x = cos(t) * 0.5 + 2.0; y = sin(t) * 0.5 - 1.5; label = 3;}
+
+        Th = buildmesh (L1(15 * nn) + L21(5 * nn) + L22(20 * nn) + L31(5 * nn) + L32(5 * nn) + L33(5 * nn)
+            + L41(20 * nn) + L42(5 * nn) + C1(10 * nn) + C21(-20 * nn) + C22(-20 * nn)
+            );
     }
 }
 

@@ -147,8 +147,13 @@ else if (config == 2)
 {
   mu = E/(2 * (1 + nu));
   lambda = E * nu/((1 + nu) * (1 - 2 * nu));
-  g1 = 0;
-  g2 = -1;
+  g1 = 0.;
+  g2 = -1.;
+  if (testcase == 6)
+  {
+    g1 = 1.;
+    g2 = 0.;
+  }
 }
 
 
