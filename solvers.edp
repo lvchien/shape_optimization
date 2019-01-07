@@ -1,6 +1,6 @@
 macro SolveStateSystem2D()
 {
-  if(config == 1)
+  if(conf == 1)
   {
     solve Stokes2([u1, u2, p], [v1, v2, q]) =
       int2d(Th)(2 * mu * dot(eps2(u1, u2), eps2(v1, v2)) - p * div2(v1, v2) - q * div2(u1, u2))
@@ -8,7 +8,7 @@ macro SolveStateSystem2D()
       + on(free, u1 = 0., u2 = 0.) 
       + on(dirichlet, u1 = udc1, u2 = udc2);
   }
-  else if(config == 2)
+  else if(conf == 2)
   {
     solve Elastic2([u1, u2], [v1, v2]) =
       int2d(Th)(lambda * div2(u1, u2) * div2(v1, v2) + 2.0 * mu * dot(eps2(u1, u2), eps2(v1, v2))) 
@@ -19,7 +19,7 @@ macro SolveStateSystem2D()
 
 macro SolveStateSystem3D()
 {
-  if(config == 1)
+  if(conf == 1)
   {
     solve Stokes3([u1, u2, u3, p], [v1, v2, v3, q]) =
       int3d(Th)(2 * mu * dot(eps3(u1, u2), eps3(v1, v2, v3)) - p * div3(v1, v2, v3) - q * div3(u1, u2, u3))
@@ -27,7 +27,7 @@ macro SolveStateSystem3D()
       + on(free, u1 = 0., u2 = 0., u3 = 0.) 
       + on(dirichlet, u1 = udc1, u2 = udc2, u3 = udc3);
   }
-  else if(config == 2)
+  else if(conf == 2)
   {
     solve Elastic3([u1, u2, u3], [v1, v2, v3]) =
       int3d(Th)(lambda * div3(u1, u2, u3) * div3(v1, v2, v3) + 2.0 * mu * dot(eps3(u1, u2, u3), eps3(v1, v2, v3))) 
@@ -38,7 +38,7 @@ macro SolveStateSystem3D()
 
 macro SolveAdjointSystem2D() 
 {
-  if(config == 1)
+  if(conf == 1)
   {
     solve StokesAdjoint2([w1, w2, qq], [v1, v2, q]) =
       int2d(Th)(2 * mu * dot(eps2(w1, w2), eps2(v1, v2)) - qq * div2(v1, v2) - q * div2(w1, w2))
@@ -46,7 +46,7 @@ macro SolveAdjointSystem2D()
       - int2d(Th)(qq * q * 1e-8)
       + on(dirichlet, free, w1 = 0., w2 = 0.);
   }
-  else if(config == 2)
+  else if(conf == 2)
   {
     ;
   }
@@ -54,7 +54,7 @@ macro SolveAdjointSystem2D()
 
 macro SolveAdjointSystem3D() 
 {
-  if(config == 1)
+  if(conf == 1)
   {
     solve StokesAdjoint3([w1, w2, w3, qq], [v1, v2, v3, q]) =
       int3d(Th)(2 * mu * dot(eps3(w1, w2, w3), eps3(v1, v2, v3)) - qq * div3(v1, v2, v3) - q * div3(w1, w2, w3))
@@ -62,7 +62,7 @@ macro SolveAdjointSystem3D()
       - int3d(Th)(qq * q * 1e-8)
       + on(dirichlet, free, w1 = 0., w2 = 0., w3 = 0.);
   }
-  else if(config == 2)
+  else if(conf == 2)
   {
     ;
   }
@@ -75,7 +75,7 @@ macro SolveRegEx2D()
   {
     solve Elliptic2([tta1, tta2], [eta1, eta2]) =
       int2d(Th)(gm * dot(eps2(tta1, tta2), eps2(eta1, eta2)))
-      + int2d(Th)(dot([tta, tta2], [eta1, eta2]))
+      + int2d(Th)(dot([tta1, tta2], [eta1, eta2]))
       + int1d(Th, free)(dL * dot([eta1, eta2], N2))
       + on(dirichlet, neumann, tta1 = 0., tta2 = 0.);
   }

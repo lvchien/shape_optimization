@@ -23,8 +23,8 @@ macro dcmp3() (-1. * dot(aeps3(u1, u2, u3), eps3(u1, u2, u3))) //EOM
 
 
 /* derivative of Lagrange function L along theta direction */
-macro gradtta2() (int1d(Th, free)(dL * dot([tta1, tta2], N2)) //EOM 
-macro gradtta3() (int2d(Th, free)(dL * dot([tta1, tta2, tta3], N3)) //EOM 
+macro gradtta2() (int1d(Th, free)(dL * dot([tta1, tta2], N2))) //EOM 
+macro gradtta3() (int2d(Th, free)(dL * dot([tta1, tta2, tta3], N3))) //EOM 
 
 
 /* Lagrange functions and its derivative */
