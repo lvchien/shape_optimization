@@ -1,0 +1,37 @@
+/* Volume function and its derivative */
+macro vol2(Th) (int2d(Th)(1.)) //EOM                       
+macro vol3(Th) (int3d(Th)(1.)) //EOM
+macro dvol() (1.) //EOM                        
+
+/* Perimeter function and its derivative */
+macro per2(Th) (int1d(Th)(1.)) //EOM
+macro per3(Th) (int2d(Th)(1.)) //EOM
+// derivative ???
+
+
+/* Dissipated energy and its derivative */
+macro enr2() (int2d(Th)(2. * mu * dot(eps2(u1, u2), eps2(u1, u2)))) //EOM                                     
+macro enr3() (int3d(Th)(2. * mu * dot(eps3(u1, u2, u3), eps3(u1, u2, u3)))) //EOM  
+macro denr2() (-2. * mu * dot(eps2(u1, u2), eps2(u1, u2)) + 2. * mu * dot(eps2(u1, u2), eps2(w1, w2))) //EOM    
+macro denr3() (-2. * mu * dot(eps3(u1, u2, u3), eps3(u1, u2, u3)) + 2. * mu * dot(eps3(u1, u2, u3), eps3(w1, w2, w3))) //EOM 
+
+/* compliance and its derivative */
+macro cmp2() (int2d(Th)(dot(aeps2(u1, u2), eps2(u1, u2)))) //EOM                      
+macro cmp3() (int3d(Th)(dot(aeps3(u1, u2, u3), eps3(u1, u2, u3)))) //EOM 
+macro dcmp2() (-1. * dot(aeps2(u1, u2), eps2(u1, u2))) //EOM                                  
+macro dcmp3() (-1. * dot(aeps3(u1, u2, u3), eps3(u1, u2, u3))) //EOM
+
+
+/* derivative of Lagrange function L along theta direction */
+macro gradtta2() (int1d(Th, free)(dL * dot([tta1, tta2], N2)) //EOM 
+macro gradtta3() (int2d(Th, free)(dL * dot([tta1, tta2, tta3], N3)) //EOM 
+
+
+/* Lagrange functions and its derivative */
+// The augmented Lagrange function 
+macro augLag() (J/J0 - l * (constr(Th) - constrtarget)/constr0 + b/2. * ((constr(Th) - constrtarget) ^ 2)/(constr0 ^ 2)) //EOM 
+macro daugLag() (dJ/J0 - l * dcon/constr0 + b * dcon * (constr(Th) - constrtarget)/(constr0 ^ 2)) //EOM
+
+// The common Lagrange function
+macro comLag() (J/J0 + l * (constr(Th) - constrtarget)/constr0) //EOM 
+macro dcomLag() (dJ/J0 + l * dcon/constr0) //EOM                       
