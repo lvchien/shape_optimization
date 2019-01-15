@@ -1,21 +1,25 @@
 include "getARGV.idp"
 include "macros.edp"
+include "functions.edp"
 include "solvers.edp"
-
 load "medit";
 cout.precision(12);
+
+int dirichlet = 1;
+int neumann = 2;
+int free = 3;
 
 /////////////////////////////////////////////////////////////////////////////////
 /////////////////////////    Problem Configuration    ///////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 
-macro J() (Cmp) //EOM                                         /* Objective function */
-macro dJ() (dCmp) //EOM                                       /* Derivative of objective function */
-macro Constr(Th) (Vol(Th)) //EOM                              /* Constraint function */ 
-macro dCon() (dVol) //EOM                                     /* Derivative of constraint function */
+macro J() (cmp2) //EOM                                        /* Objective function */
+macro dJ() (dcmp2) //EOM                                      /* Derivative of objective function */
+macro constr(Th) (vol2(Th)) //EOM                             /* Constraint function */ 
+macro dcon() (dvol) //EOM                                    /* Derivative of constraint function */
 
-macro L() (augLagrange) //EOM                                 /* Lagrange function approach */
-macro dL()  (dAugLagrange)  //EOM                             /* Derivative of Lagrange function */
+macro L() (augLag) //EOM                                      /* Lagrange function approach */
+macro dL()  (daugLag)  //EOM                                  /* Derivative of Lagrange function */
 
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -30,7 +34,7 @@ string meshname = getARGV("--meshname", "");                // name of mesh file
 string outputFolder = getARGV("--resu", "");                // output directory
 int save = getARGV("--save", 1);                            // 1 = save all results, 0 = save nothing at all
 int ns = getARGV("--ns", 3);                                // number of time steps to save results once
-int augLag = getARGV("--augLag", 1);                        // 1 = Augmented Lagrange, 0 = Common Lagrange
+int lag = getARGV("--augLag", 1);                           // 1 = Augmented Lagrange, 0 = Common Lagrange
 int regex = getARGV("--regex", 0);                          // 0 = Elliptic, 1 = tangential gradient
 int move = getARGV("--move", 0);                            // 0 = fixed initial descent step length, 1 = fixed moving length
 
@@ -67,6 +71,7 @@ mesh Th;
 string strmesh = "meshes/" + meshname + ".mesh";
 cout << "Loading mesh " << meshname << "...";
 Th = readmesh(strmesh);
+plot(Th);
 cout << "done." << endl;
 cout.flush;
 
@@ -98,7 +103,7 @@ ofstream fout(outputFolder + "/out.dat");
 
 
 /* Constraint data */                                    
-real constr0 = Constr(Th);
+real constr0 = constr(Th);
 real constrtarget = cr * constr0;
                          
 ofstream constrf(outputFolder + "/constrtarget");
@@ -161,7 +166,7 @@ else if (config == 2)
 /////////////////////////////////   Main    /////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////
 
-SolveStateSystem;	    
+SolveStateSystem2D;	    
 
 /* Save the initial value of objective function */
 real J0 = J;
@@ -171,11 +176,12 @@ j0.flush;
 
 for (j = 0; j < jmax; j++) 
 {
-  SolveStateSystem;
-  SolveAdjointSystem;
-  SolveRegEx;
-  real prod = gradLxTta;
-  real sgn = sqrt(int1d(Th, 3)(tta1^2 + tta2^2));                                         // L^2 norm of the shape gradient
+  SolveStateSystem2D;
+  SolveAdjointSystem2D;
+  SolveRegEx2D;
+  real prod = gradtta2;
+  real sgn = sqrt(int1d(Th, free)(tta1^2 + tta2^2));                                         // L^2 norm of the shape gradient
+  cout << sgn << endl;
   plot(Th, [tta1, tta2], wait = 0, value = 1, cmm = "Iteration " + j + "/" + jmax + " (testcase " + testcase + ")");
 
   real L0 = L;                                                                            // value of Lagrange function before move mesh
@@ -213,8 +219,8 @@ for (j = 0; j < jmax; j++)
     Th = adaptmesh(Th, hmax = meshsize, hmin = meshsize/sqrt(2), ratio = 1.5);
     cout << "Done adaptmesh" << endl;
 
-    SolveStateSystem;
-    SolveAdjointSystem;
+    SolveStateSystem2D;
+    SolveAdjointSystem2D;
 
     real L1 = L;                                                                       // value of Lagrange function after move mesh
     cout << "After deformation: L = " << L1 << " / before L0 = " << L0 << " (variation = " << 100 * (L1 - L0)/L0 << "%)" << endl;
@@ -231,9 +237,9 @@ for (j = 0; j < jmax; j++)
   }
   
   // Update Lagrange multiplier and penalty coefficient
-  if (augLag == 1)
+  if (lag == 1)
   {
-    l = l - b * (Constr(Th) - constrtarget)/constr0;
+    l = l - b * (constr(Th) - constrtarget)/constr0;
     if (b < bmax)
       b *= alpha;
     else
@@ -261,7 +267,7 @@ for (j = 0; j < jmax; j++)
   else
   {
     /* Save post-processing data */
-    fout << J << " " <<  L << " " << Constr(Th) << " " << l << " " << sgn << " " << b << endl;
+    fout << J << " " <<  L << " " << constr(Th) << " " << l << " " << sgn << " " << b << endl;
   }
 }
 
