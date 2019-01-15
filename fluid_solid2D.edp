@@ -1,23 +1,25 @@
 load "medit";
-include "macros.edp";
+include "getARGV.idp"
+include "macros.edp"
 
 /* Label of borders */
-int fhomoDirichlet = 0;
-int fnonhomoDirichlet = 1;
-int fNeumann = 2;
-int sDirichlet = 3;
-int sNeumann = 4;
-int free = 5;
+int FREE = 1;
+int FWALL = 11;
+int FIN = 12;
+int FOUT = 13;
+int SWALL = 21;
+int SDEFO = 22;
+int SLOAD = 23;
 
 /* Build meshes */
-border FW1(t = 0.0, 0.3){x = t; y = 0.0; label = fhomoDirichlet;}
-border F1(t = 0.0, 0.3){x = 0.3; y = t; label = free;}
-border F2(t = 0.3, 0.7){x = t; y = 0.3; label = free;}
-border F3(t = 0.3, 0.0){x = 0.7; y = t; label = free;}
-border FW2(t = 0.7, 2.0){x = t; y = 0.0; label = fhomoDirichlet;}
-border OUT(t = 0.0, 0.5){x = 2.0; y = t; label = fNeumann;}
-border FW3(t = 2.0, 0.0){x = t; y = 0.5; label = fhomoDirichlet;}
-border IN(t = 0.5, 0.0){x = 0.0; y = t; label = fnonhomoDirichlet;}
+border FW1(t = 0.0, 0.3){x = t; y = 0.0; label = FWALL;}
+border F1(t = 0.0, 0.3){x = 0.3; y = t; label = FREE;}
+border F2(t = 0.3, 0.7){x = t; y = 0.3; label = FREE;}
+border F3(t = 0.3, 0.0){x = 0.7; y = t; label = FREE;}
+border FW2(t = 0.7, 2.0){x = t; y = 0.0; label = FWALL;}
+border OUT(t = 0.0, 0.5){x = 2.0; y = t; label = FOUT;}
+border FW3(t = 2.0, 0.0){x = t; y = 0.5; label = FWALL;}
+border IN(t = 0.5, 0.0){x = 0.0; y = t; label = FIN;}
 border SW(t = 0.3, 0.7){x = t; y = 0.0; label = sDirichlet;}
 
 int nps = 3;
@@ -47,24 +49,3 @@ int lambda = 0.0;
 [fs1, fs2] = [0.0, 0.0];
 [udc1, udc2] = [0.0, 0.0];
 [unc1, unc2] = [0.0, 0.0];
-
-
-/* Declare variational problems */
-macro stokes2D([vtrial1, vtrial2, ptrial], [vtest1, vtest2, ptest], [f1, f2], [vdirichlet1, vdirichlet2], [vneumann1, vneumann2])
-{ 
-    solve stokes([vtrial1, vtrial2, ptrial], [vtest1, vtest2, ptest]) =
-        int2d(Fh)(2.0 * nu * dot(eps2(vtrial1, vtrial2), eps2(vtest1, vtest2)) - ptrial * div2(vtest1, vtest2) - ptest * div2(vtrial1, vtrial2) - dot([f1, f2], [vtest1, vtest2]))
-        - int2d(Fh)(ptrial * ptest * epsilon)
-        - int1d(Fh, fNeumann)(dot([vneumann1, vneumann2], [vtest1, vtest2]))
-        + on(free, fhomoDirichlet, vtrial1 = 0.0, vtrial2 = 0.0) 
-        + on(fnonhomoDirichlet, vtrial1 = vdirichlet1, vtrial2 = vdirichlet2);
-} //EOM
-
-macro elastic2D([utrial1, utrial2], [utest1, utest2], [f1, f2], [udirichlet1, udirichlet2], [uneumann1, uneumann2], [ufree1, ufree2])
-{
-    solve elastic([utrial1, utrial2], [utest1, utest2]) =
-        int2d(Sh)(2.0 * mu * dot(eps2(utrial1, utrial2), eps2(utest1, utest2)) + lambda * div2(utrial1, utrial2) * div2(utest1, utest2) - dot([f1, f2], [utest1, utest2]))
-        - int1d(Sh, sNeumann)(dot([uneumann1, uneumann2], [utest1, utest2]))
-        - int1d(Sh, free)(dot([ufree1, ufree2], [utest1, utest2]))
-        + on(sDirichlet, u1 = udirichlet1, u2 = udirichlet2);
-} //EOM

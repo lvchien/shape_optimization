@@ -1,8 +1,8 @@
-/* identity matrix */
+/* identity matrices */
 macro I2() [1, 0, 0, 1] //EOM
 macro I3() [1, 0, 0, 0, 1, 0, 0, 0, 1] //EOM
 
-/* normal vector */
+/* normal vectors */
 macro N2() [N.x, N.y] //EOM
 macro N3() [N.x, N.y, N.z] //EOM
 
@@ -29,5 +29,5 @@ macro aeps2(u1, u2) (2 * mu * eps2(u1, u2) + lambda * div2(u1, u2) * I2) //EOM
 macro aeps3(u1, u2, u3) (2 * mu * eps3(u1, u2, u3) + lambda * div3(u1, u2, u3) * I3) //EOM
 
 /* tangential gradient of a vector field */ 
-macro tgrad2(u) (grad2(u) - grad2(u)' * N2 * N2) //EOM                                                    
-macro tgrad3(u) (grad3(u) - grad3(u)' * N3 * N3) //EOM  
+macro tgrad2(u) (grad2(u) - tr(grad2(u)) * N2 * N2) //EOM                                                    
+macro tgrad3(u) (grad3(u) - tr(grad3(u)) * N3 * N3) //EOM  
