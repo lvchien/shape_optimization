@@ -1,20 +1,70 @@
-border FW1(t = 0.0, 0.3){x = t; y = 0.0; label = 0;}
-border FF1(t = 0.0, 0.3){x = 0.3; y = t; label = 30;}
-border FF2(t = 0.3, 0.7){x = t; y = 0.3; label = 30;}
-border FF3(t = 0.3, 0.0){x = 0.7; y = t; label = 30;}
-border FW2(t = 0.7, 2.0){x = t; y = 0.0; label = 0;}
-border OUT(t = 0.0, 0.5){x = 2.0; y = t; label = 10;}
-border FW3(t = 2.0, 0.0){x = t; y = 0.5; label = 0;}
-border IN(t = 0.5, 0.0){x = 0.0; y = t; label = 1;}
+load "medit";
+include "macros.edp";
 
-border SW(t = 0.3, 0.7){x = t; y = 0.0; label = 20;}
-border SF1(t = 0, 0.3){x = 0.7; y = t; label = 30;}
-border SF2(t = 0.7, 0.3){x = t; y = 0.3; label = 30;}
-border SF3(t = 0.3, 0.0){x = 0.3; y = t; label = 30;}
+/* Label of borders */
+int fhomoDirichlet = 0;
+int fnonhomoDirichlet = 1;
+int fNeumann = 2;
+int sDirichlet = 3;
+int sNeumann = 4;
+int free = 5;
 
-int nn = 3;
-mesh Fh = buildmesh(FW1(3 * nn) + FF1(3 * nn) + FF2(4 * nn) 
-        + FF3(3 * nn) + FW2(13 * nn) + OUT(5 * nn) + FW3(20 * nn) + IN(5 * nn));
-mesh Sh = buildmesh(SW(4 * nn) + SF1(3 * nn) + SF2(4 * nn) + SF3(3 * nn));
-// mesh Th = buildmesh(FW1(3 * nn) + SW(4 * nn) + FW2(13 * nn) + OUT(5 * nn) + FW3(20 * nn) + IN(5 * nn));
-plot(Fh, Sh);
+/* Build meshes */
+border FW1(t = 0.0, 0.3){x = t; y = 0.0; label = fhomoDirichlet;}
+border F1(t = 0.0, 0.3){x = 0.3; y = t; label = free;}
+border F2(t = 0.3, 0.7){x = t; y = 0.3; label = free;}
+border F3(t = 0.3, 0.0){x = 0.7; y = t; label = free;}
+border FW2(t = 0.7, 2.0){x = t; y = 0.0; label = fhomoDirichlet;}
+border OUT(t = 0.0, 0.5){x = 2.0; y = t; label = fNeumann;}
+border FW3(t = 2.0, 0.0){x = t; y = 0.5; label = fhomoDirichlet;}
+border IN(t = 0.5, 0.0){x = 0.0; y = t; label = fnonhomoDirichlet;}
+border SW(t = 0.3, 0.7){x = t; y = 0.0; label = sDirichlet;}
+
+int nps = 3;
+mesh Fh = buildmesh(FW1(3 * nps) + F1(3 * nps) + F2(4 * nps) + F3(3 * nps) 
+            + FW2(13 * nps) + OUT(5 * nps) + FW3(20 * nps) + IN(5 * nps));
+mesh Sh = buildmesh(SW(4 * nps) + F3(-3 * nps) + F2(-4 * nps) + F1(-3 * nps));
+
+/* Declare FE spaces and variables */
+fespace FVh(Fh, [P2, P2]);
+fespace FPh(Fh, P1);
+fespace SUh(Sh, [P1, P1]);
+
+FVh [v1, v2], [va1, va2], [vt1, vt2], [ff1, ff2], [vdc1, vdc2], [vnc1, vnc2];
+FPh p, pa, pt;
+SUh [u1, u2], [ua1, ua2], [ut1, ut2], [fs1, fs2], [udc1, udc2], [unc1, unc2];
+
+/* Set configuration */
+int epsilon = 1e-8;
+int nu = 0.01;
+int mu = 0.0;
+int lambda = 0.0;
+
+[ff1, ff2] = [0.0, 0.0];
+[vdc1, vdc2] = [y * (0.5 - y), 0.0];
+[vnc1, vnc2] = [0.0, 0.0];
+
+[fs1, fs2] = [0.0, 0.0];
+[udc1, udc2] = [0.0, 0.0];
+[unc1, unc2] = [0.0, 0.0];
+
+
+/* Declare variational problems */
+macro stokes2D([vtrial1, vtrial2, ptrial], [vtest1, vtest2, ptest], [f1, f2], [vdirichlet1, vdirichlet2], [vneumann1, vneumann2])
+{ 
+    solve stokes([vtrial1, vtrial2, ptrial], [vtest1, vtest2, ptest]) =
+        int2d(Fh)(2.0 * nu * dot(eps2(vtrial1, vtrial2), eps2(vtest1, vtest2)) - ptrial * div2(vtest1, vtest2) - ptest * div2(vtrial1, vtrial2) - dot([f1, f2], [vtest1, vtest2]))
+        - int2d(Fh)(ptrial * ptest * epsilon)
+        - int1d(Fh, fNeumann)(dot([vneumann1, vneumann2], [vtest1, vtest2]))
+        + on(free, fhomoDirichlet, vtrial1 = 0.0, vtrial2 = 0.0) 
+        + on(fnonhomoDirichlet, vtrial1 = vdirichlet1, vtrial2 = vdirichlet2);
+} //EOM
+
+macro elastic2D([utrial1, utrial2], [utest1, utest2], [f1, f2], [udirichlet1, udirichlet2], [uneumann1, uneumann2], [ufree1, ufree2])
+{
+    solve elastic([utrial1, utrial2], [utest1, utest2]) =
+        int2d(Sh)(2.0 * mu * dot(eps2(utrial1, utrial2), eps2(utest1, utest2)) + lambda * div2(utrial1, utrial2) * div2(utest1, utest2) - dot([f1, f2], [utest1, utest2]))
+        - int1d(Sh, sNeumann)(dot([uneumann1, uneumann2], [utest1, utest2]))
+        - int1d(Sh, free)(dot([ufree1, ufree2], [utest1, utest2]))
+        + on(sDirichlet, u1 = udirichlet1, u2 = udirichlet2);
+} //EOM
