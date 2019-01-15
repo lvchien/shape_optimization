@@ -1,0 +1,20 @@
+border FW1(t = 0.0, 0.3){x = t; y = 0.0; label = 0;}
+border FF1(t = 0.0, 0.3){x = 0.3; y = t; label = 30;}
+border FF2(t = 0.3, 0.7){x = t; y = 0.3; label = 30;}
+border FF3(t = 0.3, 0.0){x = 0.7; y = t; label = 30;}
+border FW2(t = 0.7, 2.0){x = t; y = 0.0; label = 0;}
+border OUT(t = 0.0, 0.5){x = 2.0; y = t; label = 10;}
+border FW3(t = 2.0, 0.0){x = t; y = 0.5; label = 0;}
+border IN(t = 0.5, 0.0){x = 0.0; y = t; label = 1;}
+
+border SW(t = 0.3, 0.7){x = t; y = 0.0; label = 20;}
+border SF1(t = 0, 0.3){x = 0.7; y = t; label = 30;}
+border SF2(t = 0.7, 0.3){x = t; y = 0.3; label = 30;}
+border SF3(t = 0.3, 0.0){x = 0.3; y = t; label = 30;}
+
+int nn = 3;
+mesh Fh = buildmesh(FW1(3 * nn) + FF1(3 * nn) + FF2(4 * nn) 
+        + FF3(3 * nn) + FW2(13 * nn) + OUT(5 * nn) + FW3(20 * nn) + IN(5 * nn));
+mesh Sh = buildmesh(SW(4 * nn) + SF1(3 * nn) + SF2(4 * nn) + SF3(3 * nn));
+// mesh Th = buildmesh(FW1(3 * nn) + SW(4 * nn) + FW2(13 * nn) + OUT(5 * nn) + FW3(20 * nn) + IN(5 * nn));
+plot(Fh, Sh);
