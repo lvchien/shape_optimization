@@ -2,32 +2,38 @@
 macro I2() [1, 0, 0, 1] //EOM
 macro I3() [1, 0, 0, 0, 1, 0, 0, 0, 1] //EOM
 
+
 /* normal vectors */
 macro N2() [N.x, N.y] //EOM
 macro N3() [N.x, N.y, N.z] //EOM
 
-/* transpose of a vector */
-macro tr(u) u' //EOM 
 
 /* gradient of a scalar field */
 macro grad2(u) [dx(u), dy(u)] // EOM                         
-macro grad3(u) [dx(u), dy(u), dz(u)] //EOM     
+macro grad3(u) [dx(u), dy(u), dz(u)] //EOM    
+
+
+/* Jacobian matrix of a vector field */
+macro Jaco2(u) [dx(u#1), dy(u#1), dx(u#2), dy(u#2)] //EOM
+macro Jaco3(u) [dx(u#1), dy(u#1), dz(u#1), dx(u#2), dy(u#2), dz(u#2), dx(u#3), dy(u#3), dz(u#3)] //EOM
+
 
 /* Inner product of 2 vectors */
-macro dot(u, v) (tr(u) * v) //EOM
+macro dot(u, v) (u' * v) //EOM
+macro dot2(u, v)(dot([u#1, u#2], [v#1, v#2])) //EOM
+macro dot3(u, v)(dot([u#1, u#2, u#3], [v#1, v#2, v#3])) //EOM
+
 
 /* divergence of a vector field */
-macro div2(u1, u2) (dx(u1) + dy(u2)) // EOM                  
-macro div3(u1, u2, u3) (dx(u1) + dy(u2) + dz(u3)) //EOM
+macro div2(u) (dx(u#1) + dy(u#2)) // EOM                  
+macro div3(u) (dx(u#1) + dy(u#2) + dz(u#3)) //EOM
+
 
 /* strain tensor */
-macro eps2(u1, u2) [dx(u1), 1./2 * (dx(u2) + dy(u1)), 1./2 * (dx(u2) + dy(u1)), dy(u2)] //EOM
-macro eps3(u1, u2, u3) [dx(u1), 1./2 * (dx(u2) + dy(u1)), 1./2 * (dx(u3) + dz(u1)), 1./2 * (dx(u2) + dy(u1)), dy(u2), 1./2 * (dy(u3) + dz(u2)), 1./2 * (dx(u3) + dz(u1)), 1./2 * (dy(u3) + dz(u2), dz(u3)] //EOM
+macro eps2(u) (1./2 * (Jaco2(u) + Jaco2(u)')) //EOM
+macro eps3(u) (1./2 * (Jaco3(u) + Jaco3(u)')) //EOM
 
-/* Hooke's law */
-macro aeps2(u1, u2) (2 * mu * eps2(u1, u2) + lambda * div2(u1, u2) * I2) //EOM
-macro aeps3(u1, u2, u3) (2 * mu * eps3(u1, u2, u3) + lambda * div3(u1, u2, u3) * I3) //EOM
 
 /* tangential gradient of a vector field */ 
-macro tgrad2(u) (grad2(u) - tr(grad2(u)) * N2 * N2) //EOM                                                    
-macro tgrad3(u) (grad3(u) - tr(grad3(u)) * N3 * N3) //EOM  
+macro tgrad2(u) (grad2(u) - grad2(u)' * N2 * N2) //EOM                                                    
+macro tgrad3(u) (grad3(u) - grad3(u)' * N3 * N3) //EOM  

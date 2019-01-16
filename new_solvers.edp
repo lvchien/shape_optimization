@@ -1,33 +1,43 @@
 /* Declare variational problems */
 
-macro stokes2D([Fh, FDIR1, FDIR2, FNEU1, FNEU2], [v1, v2, p], [vt1, vt2, pt], [f1, f2], [vd11, vd12], [vd21, vd22], [vn11, vn12], [vn21, vn22])
+macro stokes2D(Th, DIR1, DIR2, DIR3, NEU1, NEU2, NEU3, v, p, vt, pt, f, vd1, vd2, vd3, vn1, vn2, vn3, nu, epsilon)
 { 
-    solve stokes([v1, v2, p], [vt1, vt2, pt]) =
-        int2d(Fh)(2.0 * nu * dot(eps2(v1, v2), eps2(vt1, vt2)) - p * div2(vt1, vt2) - pt * div2(v1, v2) - dot([f1, f2], [vt1, vt2]))
-        - int2d(Fh)(p * pt * epsilon)
-        - int1d(Fh, FNEU1)(dot([vn11, vn12], [vt1, vt2]))
-        - int1d(Fh, FNEU2)(dot([vn21, vn22], [vt1, vt2]))
-        + on(FDIR1, v1 = vd11, v2 = vd12) 
-        + on(FDIR2, v1 = vd21, v2 = vd22);
+    solve stokes([v#1, v#2, p], [vt#1, vt#2, pt]) =
+        int2d(Th)(2.0 * nu * dot(eps2(v), eps2(vt)) - p * div2(vt) - pt * div2(v))
+        - int2d(Th)(dot2(f, vt))
+        - int2d(Th)(p * pt * epsilon)
+        - int1d(Th, NEU1)(dot2(vn1, vt))
+        - int1d(Th, NEU2)(dot2(vn2, vt))
+        - int1d(Th, NEU3)(dot2(vn3, vt))
+        + on(DIR1, v#1 = vd1#1, v#2 = vd1#2)
+        + on(DIR2, v#1 = vd2#1, v#2 = vd2#2)
+        + on(DIR3, v#1 = vd3#1, v#2 = vd3#2);
 } //EOM
 
-macro elastic2D([Sh, SDIR1, SDIR2, SNEU1, SNEU2], [u1, u2], [ut1, ut2], [f1, f2], [ud11, ud12], [ud21, ud22], [un11, un12], [un21, un22])
+
+macro elastic2D(Th, DIR1, DIR2, DIR3, NEU1, NEU2, NEU3, u, ut, f, ud1, ud2, ud3, un1, un2, un3, mu, lambda)
 {
-    solve elastic([u1, u2], [ut1, ut2]) =
-        int2d(Sh)(2.0 * mu * dot(eps2(u1, u2), eps2(ut1, ut2)) + lambda * div2(u1, u2) * div2(ut1, ut2) - dot([f1, f2], [ut1, ut2]))
-        - int1d(Sh, SNEU1)(dot([un11, un12], [ut1, ut2]))
-        - int1d(Sh, SNEU2)(dot([un21, un22], [ut1, ut2]))
-        + on(SDIR1, u1 = ud12, u2 = ud12)
-        + on(SDIR2, u1 = ud21, u2 = ud22);
+    solve elastic([u#1, u#2], [ut#1, ut#2]) =
+        int2d(Th)(2.0 * mu * dot(eps2(u), eps2(ut)) + lambda * div2(u) * div2(ut))
+        - int2d(Sh)(dot2(f, ut))
+        - int1d(Th, NEU1)(dot2(un1, ut))
+        - int1d(Th, NEU2)(dot2(un2, ut))
+        - int1d(Th, NEU3)(dot2(un3, ut))
+        + on(DIR1, u#1 = ud1#1, u#2 = ud1#2)
+        + on(DIR2, u#1 = ud2#1, u#2 = ud2#2)
+        + on(DIR3, u#1 = ud3#1, u#2 = ud3#2);
 } //EOM
 
-macro elliptic2D([Th, DIR1, DIR2, DIR3, NEU1, NEU2], [d1, d2], [dt1, dt2], [f1, f2], [dd11, dd12], [dd21, dd22], [dd31, dd32], [dn11, dn12], [dn21, dn22])
+
+macro elliptic2D(Th, DIR1, DIR2, DIR3, NEU1, NEU2, NEU3, d, dt, f, dd1, dd2, dd3, dn1, dn2, dn3, alpha, beta)
 {
-    solve elliptic([d1, d2], [dt1, dt2]) =
-        int2d(Th)(gamma * dot(eps2(d1, d2), eps2(dt1, dt2)) + dot([d1, d2], [dt1, dt2]) - dot([f1, f2], [dt1, dt2]))
-        - int1d(Th, NEU1)(dot([dd11, dd12], [dt1, dt2]))
-        - int1d(Th, NEU2)(dot([dd21, dd22], [dt1, dt2]))
-        + on(DIR1, d1 = dd11, d2 = dd12)
-        + on(DIR2, d1 = dd21, d2 = dd22)
-        + on(DIR3, d1 = dd31, d2 = dd32);
+    solve elliptic([d#1, d#2], [dt#1, dt#2]) =
+        int2d(Th)(alpha * dot(Jaco2(d), Jaco2(dt)) + beta * dot2(d, dt))
+        - int2d(Th)(dot2(f, dt))
+        - int1d(Th, NEU1)(dot2(dn1, dt))
+        - int1d(Th, NEU2)(dot2(dn2, dt))
+        - int1d(Th, NEU3)(dot2(dn3, dt))
+        + on(DIR1, d#1 = dd1#1, d#2 = dd1#2)
+        + on(DIR2, d#1 = dd2#1, d#2 = dd2#2)
+        + on(DIR3, d#1 = dd3#1, d#2 = dd3#2);
 } //EOM
