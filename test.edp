@@ -1,0 +1,20 @@
+load "medit";
+
+int nn = 2;
+
+int DIR = 1;
+int FREE = 2;
+int DUMMY = -1;
+
+border L1(t = 0.0, 1.0){x = t; y = 0.0; label = FREE;}
+border L2(t = 0.0, 1.0){x = 1.0; y = t; label = FREE;}
+border L3(t = 1.0, 0.0){x = t; y = 1.0; label = DIR;}
+border L4(t = 1.0, 0.0){x = 0.0; y = t; label = FREE;}
+
+mesh Th = buildmesh(L1(5 * nn) + L2(5 * nn) + L3(5 * nn) + L4(5 * nn));
+fespace Vh(Th, P2);
+fespace Ph(Th, P1);
+
+Vh u = 1.5;
+
+plot(Th, [u, u]);

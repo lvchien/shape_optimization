@@ -1,0 +1,54 @@
+load "medit"
+include "getARGV.idp"
+include "FSI2D_solvers.edp"
+
+/* Label of borders */
+int FREE = 1;
+int FWALL = 11;
+int FIN = 12;
+int FOUT = 13;
+int SWALL = 21;
+int SDEFO = 22;
+int SLOAD = 23;
+int DUMMY = -1;
+
+/* Load mesh */
+string fmsh = "fluid";
+string smsh = "solid";
+mesh Fh = readmesh("meshes/FSI/" + fmsh + ".mesh");
+mesh Sh = readmesh("meshes/FSI/" + smsh + ".mesh");
+
+/* Declare FE spaces and variables */
+fespace FVh(Fh, P2);
+fespace FPh(Fh, P1);
+fespace SUh(Sh, P1);
+
+FVh v1, v2, va1, va2, vt1, vt2, ff1, ff2, vin1, vin2, vw1, vw2, vout1, vout2, vtmpve1, vtmpve2, vtmpma1, vtmpma2, vtmpma3, vtmpma4;
+FPh p, pa, pt;
+SUh u1, u2, ua1, ua2, ut1, ut2, fs1, fs2, uw1, uw2, ud1, ud2, ul1, ul2, utmpve1, utmpve2, utmpma1, utmpma2, utmpma3, utmpma4;
+
+/* Set configuration */
+real epsilon = 1e-8;
+real nu = 0.01;
+real E = 1.0;
+real nuy = 0.3;
+real mu = E/(2 * (1 + nuy));
+real lambda = E * nuy/((1 + nuy) * (1 - 2 * nuy));
+
+int config = 1;
+
+if(config == 1)
+{
+    ff1 = 0.0; ff2 = 0.0;
+    vin1 = y * (0.5 - y); vin2 = 0.0;
+    vw1 = 0.0; vw2 = 0.0;
+    vout1 = 0.0; vout2 = 0.0;
+
+    fs1 = 0.0; fs2 = 0.0;
+    uw1 = 0.0; uw2 = 0.0;
+    ud1 = 0.0; ud2 = 0.0;
+    ul1 = 0.0; ul2 = 0.0;
+}
+
+statesystem(Fh, Sh, FIN, FWALL, FOUT, DUMMY, SDEFO, SWALL, SLOAD, DUMMY, FREE, DUMMY, v, p, u, vt, pt, ut, ff, fs, vin, vw, vout, vtmpve, ud, uw, ul, utmpve, vtmpve, vtmpma, utmpve, utmpma, nu, mu, lambda, epsilon);
+plot(Fh, Sh, [v1, v2], [u1, u2]);

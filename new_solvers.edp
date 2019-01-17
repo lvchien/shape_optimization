@@ -1,42 +1,45 @@
 /* Declare variational problems */
 
-macro stokes2D(Th, DIR1, DIR2, DIR3, NEU1, NEU2, NEU3, v, p, vt, pt, f, vd1, vd2, vd3, vn1, vn2, vn3, nu, epsilon)
+macro stokes2D(Th, DIR1, DIR2, DIR3, NEUVE1, NEUVE2, NEUMA1, NEUMA2, v, p, vt, pt, f, vd1, vd2, vd3, vnve1, vnve2, vnma1, vnma2, nu, epsilon)
 { 
     solve stokes([v#1, v#2, p], [vt#1, vt#2, pt]) =
         int2d(Th)(2.0 * nu * dot(eps2(v), eps2(vt)) - p * div2(vt) - pt * div2(v))
         - int2d(Th)(dot2(f, vt))
         - int2d(Th)(p * pt * epsilon)
-        - int1d(Th, NEU1)(dot2(vn1, vt))
-        - int1d(Th, NEU2)(dot2(vn2, vt))
-        - int1d(Th, NEU3)(dot2(vn3, vt))
+        - int1d(Th, NEUVE1)(dot2(vnve1, vt))
+        - int1d(Th, NEUVE2)(dot2(vnve2, vt))
+        - int1d(Th, NEUMA1)((vnma1#1 * N.x + vnma1#2 * N.y) * vt#1 + (vnma1#3 * N.x + vnma1#4 * N.y) * vt#2)
+        - int1d(Th, NEUMA2)((vnma2#1 * N.x + vnma2#2 * N.y) * vt#1 + (vnma2#3 * N.x + vnma2#4 * N.y) * vt#2)
         + on(DIR1, v#1 = vd1#1, v#2 = vd1#2)
         + on(DIR2, v#1 = vd2#1, v#2 = vd2#2)
         + on(DIR3, v#1 = vd3#1, v#2 = vd3#2);
 } //EOM
 
 
-macro elastic2D(Th, DIR1, DIR2, DIR3, NEU1, NEU2, NEU3, u, ut, f, ud1, ud2, ud3, un1, un2, un3, mu, lambda)
+macro elastic2D(Th, DIR1, DIR2, DIR3, NEUVE1, NEUVE2, NEUMA1, NEUMA2, u, ut, f, ud1, ud2, ud3, unve1, unve2, unma1, unma2, mu, lambda)
 {
     solve elastic([u#1, u#2], [ut#1, ut#2]) =
         int2d(Th)(2.0 * mu * dot(eps2(u), eps2(ut)) + lambda * div2(u) * div2(ut))
         - int2d(Sh)(dot2(f, ut))
-        - int1d(Th, NEU1)(dot2(un1, ut))
-        - int1d(Th, NEU2)(dot2(un2, ut))
-        - int1d(Th, NEU3)(dot2(un3, ut))
+        - int1d(Th, NEUVE1)(dot2(unve1, ut))
+        - int1d(Th, NEUVE2)(dot2(unve2, ut))
+        - int1d(Th, NEUMA1)((unma1#1 * N.x + unma1#2 * N.y) * ut#1 + (unma1#3 * N.x + unma1#4 * N.y) * ut#2)
+        - int1d(Th, NEUMA2)((unma2#1 * N.x + unma2#2 * N.y) * ut#1 + (unma2#3 * N.x + unma2#4 * N.y) * ut#2)
         + on(DIR1, u#1 = ud1#1, u#2 = ud1#2)
         + on(DIR2, u#1 = ud2#1, u#2 = ud2#2)
         + on(DIR3, u#1 = ud3#1, u#2 = ud3#2);
 } //EOM
 
 
-macro elliptic2D(Th, DIR1, DIR2, DIR3, NEU1, NEU2, NEU3, d, dt, f, dd1, dd2, dd3, dn1, dn2, dn3, alpha, beta)
+macro elliptic2D(Th, DIR1, DIR2, DIR3, NEUVE1, NEUVE2, NEUMA1, NEUMA2, d, dt, f, dd1, dd2, dd3, dnve1, dnve2, dnma1, dnma2, alpha, beta)
 {
     solve elliptic([d#1, d#2], [dt#1, dt#2]) =
         int2d(Th)(alpha * dot(Jaco2(d), Jaco2(dt)) + beta * dot2(d, dt))
         - int2d(Th)(dot2(f, dt))
-        - int1d(Th, NEU1)(dot2(dn1, dt))
-        - int1d(Th, NEU2)(dot2(dn2, dt))
-        - int1d(Th, NEU3)(dot2(dn3, dt))
+        - int1d(Th, NEUVE1)(dot2(dnve1, dt))
+        - int1d(Th, NEUVE2)(dot2(dnve2, dt))
+        - int1d(Th, NEUMA1)((dnma1#1 * N.x + dnma1#2 * N.y) * dt#1 + (dnma1#3 * N.x + dnma1#4 * N.y) * dt#2)
+        - int1d(Th, NEUMA2)((dnma2#1 * N.x + dnma2#2 * N.y) * dt#1 + (dnma2#3 * N.x + dnma2#4 * N.y) * dt#2)
         + on(DIR1, d#1 = dd1#1, d#2 = dd1#2)
         + on(DIR2, d#1 = dd2#1, d#2 = dd2#2)
         + on(DIR3, d#1 = dd3#1, d#2 = dd3#2);
