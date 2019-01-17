@@ -15,25 +15,23 @@ macro grad3(u) [dx(u), dy(u), dz(u)] //EOM
 
 /* Inner product of 2 vectors */
 macro dot(u, v) (u' * v) //EOM
-macro dot2(u, v) (dot([u#1, u#2], [v#1, v#2])) //EOM
-macro dot3(u, v) (dot([u#1, u#2, u#3], [v#1, v#2, v#3])) //EOM
 
 
 /* Jacobian matrix of a vector field */
-macro Jaco2(u) [dx(u#1), dy(u#1), dx(u#2), dy(u#1)] //EOM
-macro trJaco2(u) [dx(u#1), dx(u#2), dy(u#1), dy(u#1)] //EOM
-macro Jaco3(u) [dx(u#1), dy(u#1), dz(u#1), dx(u#2), dy(u#2), dz(u#2), dx(u#3), dy(u#3), dz(u#3)] //EOM
-macro trJaco3(u) [dx(u#1), dx(u#2), dx(u#3), dy(u#1), dy(u#2), dy(u#3), dz(u#1), dz(u#2), dz(u#3)] //EOM
+macro Jaco2(u1, u2) [dx(u1), dy(u1), dx(u2), dy(u1)] //EOM
+macro trJaco2(u1, u2) [dx(u1), dx(u2), dy(u1), dy(u1)] //EOM
+macro Jaco3(u1, u2, u3) [dx(u1), dy(u1), dz(u1), dx(u2), dy(u2), dz(u2), dx(u3), dy(u3), dz(u3)] //EOM
+macro trJaco3(u1, u2, u3) [dx(u1), dx(u2), dx(u3), dy(u1), dy(u2), dy(u3), dz(u1), dz(u2), dz(u3)] //EOM
 
 
 /* divergence of a vector field */
-macro div2(u) (dx(u#1) + dy(u#2)) // EOM                  
-macro div3(u) (dx(u#1) + dy(u#2) + dz(u#3)) //EOM
+macro div2(u1, u2) (dx(u1) + dy(u2)) // EOM                  
+macro div3(u1, u2, u3) (dx(u1) + dy(u2) + dz(u3)) //EOM
 
 
 /* strain tensor */
-macro eps2(u) (1./2 * (Jaco2(u) + trJaco2(u))) //EOM
-macro eps3(u) (1./2 * (Jaco3(u) + trJaco3(u))) //EOM
+macro eps2(u1, u2) (1./2 * (Jaco2(u1, u2) + trJaco2(u1, u2))) //EOM
+macro eps3(u1, u2, u3) (1./2 * (Jaco3(u1, u2, u3) + trJaco3(u1, u2, u3))) //EOM
 
 
 /* tangential gradient of a vector field */ 
