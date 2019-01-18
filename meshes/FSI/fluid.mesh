@@ -4,11 +4,7 @@ Dimension
 2
 
 Identifier
-<<<<<<< HEAD
-";3, Date: 19/01/17 13:11 20s"
-=======
-";3, Date: 19/01/16 21:02 46s"
->>>>>>> Add mesh of 1st case
+";3, Date: 19/01/18 10:15 09s"
 
 Geometry
 "meshes/FSI/fluid.mesh.gmsh"
