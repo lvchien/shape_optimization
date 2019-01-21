@@ -1,8 +1,8 @@
 include "getARGV.idp"
 
 int case = getARGV("--case", 1);                                // Case study
-string fname = getARGV("--fname", "fluid");                     // File name of the mesh of fluid domain
-string sname = getARGV("--sname", "solid");                     // File name of the mesh of solid domain
+string fmsh = getARGV("--fmsh", "fluid");                       // File name of the mesh of fluid domain
+string smsh = getARGV("--smsh", "solid");                       // File name of the mesh of solid domain
 int nps = getARGV("--nps", 3);                                  // Number of meshing points
 
 /* Label of borders */
@@ -32,9 +32,6 @@ if(case == 1)
 
     Fh = buildmesh(FW1(3 * nps) + F1(3 * nps) + F2(4 * nps) + F3(3 * nps) + FW2(13 * nps) + OUT(5 * nps) + FW3(20 * nps) + IN(5 * nps));
     Sh = buildmesh(SW(4 * nps) + F3(-3 * nps) + F2(-4 * nps) + F1(-3 * nps));
-
-    savemesh(Fh, "meshes/FSI/" + fname + ".mesh");
-    savemesh(Sh, "meshes/FSI/" + sname + ".mesh");
 }
 else if(case == 2)
 {
@@ -53,9 +50,23 @@ else if(case == 2)
 
     Fh = buildmesh(FW1(4 * nps) + FW2(2 * nps) + FW3(10 * nps) + OUT(6 * nps) + FW4(10 * nps) + FW5(2 * nps) + FW6(4 * nps) + IN(2 * nps) + SW1(-1 * nps) + F1(-4 * nps) + SW2(-1 * nps) + F2(-4 * nps));
     Sh = buildmesh(SW1(1 * nps) + F1(4 * nps) + SW2(1 * nps) + F2(4 * nps));
+}
+else if(case == 3)
+{
+    border FW1(t = 0.0, 20.0){x = t; y = 0.0; label = FWALL;}
+    border FW2(t = 29.0, 40.0){x = t; y = 0.0; label = FWALL;}
+    border OUT(t = 0.0, 8.0){x = 40.0; y = t; label = FOUT;}
+    border FW3(t = 40.0, 0.0){x = t; y = 8.0; label = FWALL;}
+    border IN(t = 8.0, 0.0){x = 0.0; y = t; label = FIN;}
+    border SW(t = 20.0, 29.0){x = t; y = 0.0; label = SWALL;}
+    border F1(t = 0.0, 7.0){x = 29.0; y = t; label = FREE;}
+    border F2(t = 29.0, 20.0){x = t; y = 7.0; label = FREE;}
+    border F3(t = 7.0, 0.0){x = 20.0; y = t; label = FREE;}
 
-    savemesh(Fh, "meshes/FSI/" + fname + ".mesh");
-    savemesh(Sh, "meshes/FSI/" + sname + ".mesh");
+    Fh = buildmesh(FW1(20 * nps) + F3(-7 * nps) + F2(-9 * nps) + F1(-7 * nps) + FW2(11 * nps) + OUT(8 * nps) + FW3(40 * nps) + IN(8 * nps));
+    Sh = buildmesh(SW(9 * nps) + F1(7 * nps) + F2(9 * nps) + F3(7 * nps));
 }
 
+savemesh(Fh, "meshes/FSI/" + fmsh + ".mesh");
+savemesh(Sh, "meshes/FSI/" + smsh + ".mesh");
 plot(Fh, Sh);
