@@ -27,7 +27,7 @@ real w = getARGV("--w", 1.0);                                               // W
 /*---------------------------------- Numerical configurations ----------------------------------*/                                                                
 real b0 = getARGV("--b0", 1e-2);                                            // Initial value of b
 real bmax = getARGV("--bmax", 1e2);                                         // Maximal value of b, no longer update if b > bmax
-real l0 = getARGV("--l0", 0);                                               // Initial value of l
+real l0 = getARGV("--l0", 0.0);                                             // Initial value of l
 real gm = getARGV("--gm", 0.01);                                            // Regularization parameter 
 real tau0 = getARGV("--tau0", 1e-1);                                        // Initial descent step length
 real beta = getARGV("--beta", 0.7);                                         // Update step length 
@@ -35,7 +35,7 @@ real sm = getARGV("--sm", 1e-4);                                            // A
 real alpha = getARGV("--alpha", 1.05);                                      // Update coefficient of b: b_{n+1} = alpha*b_n
 real minsgn = getARGV("--minsgn", 1e-3);                                    // Value for the stopping criterion
 real minarea = getARGV("--minarea", 1e-6);                                  // Remesh parameter: remesh if any element has an area less than minarea
-real mshsize = getARGV("--mshsize", 0.06);                                  // Required edge size when remeshing : hmax = mshsize, hmin = mshsize/sqrt(2)
+real mshsize = getARGV("--mshsize", 0.02);                                  // Required edge size when remeshing : hmax = mshsize, hmin = mshsize/sqrt(2)
 /*--------------------------------------------------------------------------------------------*/
 
 
@@ -72,7 +72,7 @@ fespace SUh(Sh, P1);
 
 /* Declare FE variables */
 FVh v1, v2, va1, va2, vt1, vt2, ff1, ff2, vin1, vin2, vw1, vw2, vout1, vout2;
-FPh p, pa, pt, df1, df2, dft1, dft2;
+FPh p, pa, pt, psi, psit, df1, df2, dft1, dft2;
 SUh u1, u2, ua1, ua2, ut1, ut2, fs1, fs2, uload1, uload2, ds1, ds2, dst1, dst2;
 
 
@@ -80,10 +80,14 @@ SUh u1, u2, ua1, ua2, ut1, ut2, fs1, fs2, uload1, uload2, ds1, ds2, dst1, dst2;
 if(case == 1)
 {
     ff1 = 0.0; ff2 = 0.0;
-    vin1 = y * (0.5 - y); vin2 = 0.0;
+    vin1 = 16 * y * (0.5 - y); vin2 = 0.0;
     vout1 = 0.0; vout2 = 0.0;
 
     fs1 = 0.0; fs2 = 0.0;
+
+    nu = 0.005;
+    lambda = 0.00529;
+    mu = 0.0476;
 }
 else if(case == 2)
 {
@@ -129,7 +133,7 @@ problem stokes2D([v1, v2, p], [vt1, vt2, pt]) =
         - int2d(Fh)(p * pt * epsilon)
         - int1d(Fh, FOUT)(vout1 * vt1 + vout2 * vt2)
         + on(FIN, v1 = vin1, v2 = vin2)
-        + on(FWALL, FREE, v1 = 0.0, v2 = 0.0);
+        + on(FWALL, SWALL, FREE, v1 = 0.0, v2 = 0.0);
 
 problem elastic2D([u1, u2], [ut1, ut2]) = 
     int2d(Sh)(2.0 * mu * dot(eps2(u1, u2), eps2(ut1, ut2)) + lambda * div2(u1, u2) * div2(ut1, ut2))
@@ -147,7 +151,7 @@ problem adjointstokes2D([va1, va2, pa], [vt1, vt2, pt]) =
     int2d(Fh)(2.0 * nu * dot(eps2(va1, va2), eps2(vt1, vt2)) - pa * div2(vt1, vt2) - pt * div2(va1, va2))
         + int2d(Fh)(4.0 * (1 - w) * nu * dot(eps2(v1, v2), eps2(vt1, vt2)))
         - int2d(Fh)(pa * pt * epsilon)
-        + on(FWALL, FIN, va1 = 0.0, va2 = 0.0)
+        + on(FWALL, SWALL, FIN, va1 = 0.0, va2 = 0.0)
         + on(FREE, va1 = ua1, va2 = ua2);
 
 problem solidelliptic2D([ds1, ds2], [dst1, dst2]) = 
@@ -162,14 +166,12 @@ problem fluidelliptic2D([df1, df2], [dft1, dft2]) =
         // + int2d(Fh)(dot([df1, df2], [dft1, dft2]))
         + int1d(Fh, FREE)((1 - gm) * (dot(tgrad2(df1), tgrad2(dft1)) + dot(tgrad2(df2), tgrad2(dft2))))
         + on(FREE, df1 = ds1, df2 = ds2)
-        // + int1d(Sh, FREE)(dL * dot([dft1, dft2], N2))
-        + on(FIN, FWALL, FOUT, df1 = 0.0, df2 = 0.0);
+        + on(FIN, FWALL, FOUT, SWALL, df1 = 0.0, df2 = 0.0);
 
-FPh psi,phi;
-problem streamlines(psi, phi) =
-int2d(Fh)(dx(psi) * dx(phi) + dy(psi) * dy(phi))
-    + int2d(Fh)(-phi * (dy(v1) - dx(v2)))
-    + on(FIN, FWALL, FOUT, FREE, psi=0);
+problem streamlines(psi, psit) =
+int2d(Fh)(dx(psi) * dx(psit) + dy(psi) * dy(psit))
+    + int2d(Fh)(-psit * (dy(v1) - dx(v2)))
+    + on(FIN, FWALL, FOUT, FREE, SWALL, psi=0);
 
 
 macro solvestate()
@@ -187,6 +189,12 @@ macro solveadjoint()
 macro solveregex()
 {
     solidelliptic2D;
+    if(case == 1)
+    {
+        func cut = (1 - (x > 0.48) * (x < 0.52)) * (1 - (y < 0.01));
+        ds1 = ds1 * cut;
+        ds2 = ds2 * cut;
+    }
     fluidelliptic2D;
 } //EOM
 
@@ -200,9 +208,6 @@ vol0 = vol(Sh);
 convol = vol0 * vf;
 fout << J0 << " " <<  L << " " << vol0 << " " << l0 << " " << b0 << endl;
 
-streamlines;
-medit("a", Fh, psi);
-
 int i = 0;
 int imax = 1000;
 real sgn = minsgn + epsilon;
@@ -213,7 +218,6 @@ while(i < imax && sgn > minsgn)
     solveadjoint;
     solveregex;
     sgn = sqrt(int1d(Sh, FREE)(ds1^2 + ds2^2));
-    plot(Fh, Sh, [df1, df2], [ds1, ds2], cmm = "Iteration " + i + "/" + imax);
     
     Fh = adaptmesh(Fh, [df1, df2], hmax = mshsize, hmin = mshsize / sqrt(2));
     Sh = adaptmesh(Sh, [ds1, ds2], hmax = mshsize, hmin = mshsize / sqrt(2));
@@ -260,6 +264,7 @@ while(i < imax && sgn > minsgn)
 
             Fh = movemesh(Fh, [x + tau * df1, y + tau * df2]);
             Sh = movemesh(Sh, [x + tau * ds1, y + tau * ds2]);
+            plot(Fh, Sh);
             solvestate;
             afterL = L;
         }
@@ -295,4 +300,4 @@ if(sgn < minsgn)
 // Final results
 savemesh(Fh, folder + "/fmesh_final.mesh");
 savemesh(Sh, folder + "/smesh_final.mesh");
-plot(Fh, Sh);
+// plot(Fh, Sh);
