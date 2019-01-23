@@ -20,18 +20,20 @@ system("mkdir " + "meshes/FSI");
 /* Build meshes */
 if(case == 1)
 {
-    border FW1(t = 0.0, 0.3){x = t; y = 0.0; label = FWALL;}
-    border F1(t = 0.0, 0.3){x = 0.3; y = t; label = FREE;}
-    border F2(t = 0.3, 0.7){x = t; y = 0.3; label = FREE;}
-    border F3(t = 0.3, 0.0){x = 0.7; y = t; label = FREE;}
-    border FW2(t = 0.7, 2.0){x = t; y = 0.0; label = FWALL;}
-    border OUT(t = 0.0, 0.5){x = 2.0; y = t; label = FOUT;}
-    border FW3(t = 2.0, 0.0){x = t; y = 0.5; label = FWALL;}
-    border IN(t = 0.5, 0.0){x = 0.0; y = t; label = FIN;}
-    border SW(t = 0.3, 0.7){x = t; y = 0.0; label = SWALL;}
+    border FW1(t = 0.0, 1.7){x = t; y = 0.0; label = FWALL;}
+    border F1(t = 0.0, 0.6){x = 1.7; y = t; label = FREE;}
+    border F2(t = 1.7, 2.3){x = t; y = 0.6; label = FREE;}
+    border F3(t = 0.6, 0.0){x = 2.3; y = t; label = FREE;}
+    border FW2(t = 2.3, 4.0){x = t; y = 0.0; label = FWALL;}
+    border OUT(t = 0.0, 1.0){x = 4.0; y = t; label = FOUT;}
+    border FW3(t = 4.0, 0.0){x = t; y = 1.0; label = FWALL;}
+    border IN(t = 1.0, 0.0){x = 0.0; y = t; label = FIN;}
+    border SW(t = 1.7, 2.3){x = t; y = 0.0; label = SWALL;}
+    border F4(t = 0, 2 * pi){x = 1.85 + 0.1 * cos(t); y = 0.3 + 0.1 * sin(t); label = FREE;}
+    border F5(t = 0, 2 * pi){x = 2.15 + 0.1 * cos(t); y = 0.3 + 0.1 * sin(t); label = FREE;}
 
-    Fh = buildmesh(FW1(3 * nps) + F1(9 * nps) + F2(12 * nps) + F3(9 * nps) + FW2(13 * nps) + OUT(5 * nps) + FW3(20 * nps) + IN(5 * nps));
-    Sh = buildmesh(SW(8 * nps) + F3(-9 * nps) + F2(-12 * nps) + F1(-9 * nps));
+    Fh = buildmesh(FW1(17 * nps) + F1(18 * nps) + F2(18 * nps) + F3(18 * nps) + FW2(17 * nps) + OUT(10 * nps) + FW3(40 * nps) + IN(10 * nps) + F4(20 * nps) + F5(20 * nps));
+    Sh = buildmesh(SW(18 * nps) + F3(-18 * nps) + F2(-18 * nps) + F1(-18 * nps) + F4(-20 * nps) + F5(-20 * nps));
 }
 else if(case == 2)
 {
