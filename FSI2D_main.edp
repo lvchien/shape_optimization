@@ -83,9 +83,9 @@ if(case == 1)
 
     fs1 = 0.0; fs2 = 0.0;
 
-    E = 3.0e9;
+    E = 1.5;
     nus = 0.3;
-    nu = 1.002;
+    nu = 0.005;
 }
 else if(case == 2)
 {
@@ -161,14 +161,14 @@ problem adjointstokes2D([va1, va2, pa], [vt1, vt2, pt]) =
         + on(FREE, va1 = ua1, va2 = ua2);
 
 problem solidelliptic2D([ds1, ds2], [dst1, dst2]) = 
-    int2d(Sh)(gm * dot(Jaco2(ds1, ds2), Jaco2(dst1, dst2)))
+    int2d(Sh)(gm * (2 * mu * dot(eps2(ds1, ds2), eps2(dst1, dst2)) + lambda * div2(ds1, ds2) * div2(dst1, dst2)))
         // + int2d(Sh)(dot([ds1, ds2], [dst1, dst2]))
         + int1d(Sh, FREE)((1 - gm) * (dot(tgrad2(ds1), tgrad2(dst1)) + dot(tgrad2(ds2), tgrad2(dst2))))
         + int1d(Sh, FREE)(dL * dot([dst1, dst2], N2))
         + on(SLOAD, SWALL, ds1 = 0.0, ds2 = 0.0);
 
 problem fluidelliptic2D([df1, df2], [dft1, dft2]) = 
-    int2d(Fh)(gm * dot(Jaco2(df1, df2), Jaco2(dft1, dft2)))
+    int2d(Fh)(gm * (2 * mu * dot(eps2(df1, df2), eps2(dft1, dft2)) + lambda * div2(df1, df2) * div2(dft1, dft2)))
         // + int2d(Fh)(dot([df1, df2], [dft1, dft2]))
         + int1d(Fh, FREE)((1 - gm) * (dot(tgrad2(df1), tgrad2(dft1)) + dot(tgrad2(df2), tgrad2(dft2))))
         + on(FREE, df1 = ds1, df2 = ds2)
@@ -177,7 +177,7 @@ problem fluidelliptic2D([df1, df2], [dft1, dft2]) =
 problem streamlines(psi, psit) =
 int2d(Fh)(dx(psi) * dx(psit) + dy(psi) * dy(psit))
     + int2d(Fh)(-psit * (dy(v1) - dx(v2)))
-    + on(FIN, FWALL, FOUT, FREE, SWALL, psi=0);
+    + on(FIN, FWALL, FOUT, FREE, SWALL, psi = 0);
 
 
 macro solvestate()
@@ -210,7 +210,7 @@ macro solveregex()
 /* Initial values */
 solvestate;
 J0 = J;
-vol0 = vol(Sh) + vol(Fh);
+vol0 = vol(Sh);
 convol = vol0 * vf;
 fout << J0 << " " <<  L << " " << vol(Sh) << " " << l0 << " " << b0 << endl;
 
@@ -225,8 +225,8 @@ while(i < imax && sgn > minsgn)
     solveregex;
     sgn = sqrt(int1d(Sh, FREE)(ds1^2 + ds2^2));
     
-    Fh = adaptmesh(Fh, hmax = mshsize, hmin = mshsize / sqrt(2));
-    Sh = adaptmesh(Sh, hmax = mshsize, hmin = mshsize / sqrt(2));
+    Fh = adaptmesh(Fh, [df1, df2], hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
+    Sh = adaptmesh(Sh, [ds1, ds2], hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
     plot(Fh, Sh, [df1, df2], [ds1, ds2], cmm = "Iteration " + i + "/" + imax);
 
     real tau = tau0;
