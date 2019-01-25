@@ -64,9 +64,10 @@ else if(case == 3)
     border F1(t = 0.0, 0.7){x = 2.9; y = t; label = FREE;}
     border F2(t = 2.9, 2.0){x = t; y = 0.7; label = FREE;}
     border F3(t = 0.7, 0.0){x = 2.0; y = t; label = FREE;}
+    border F4(t = 0, 2 * pi){x = 2.5 + 0.1 * cos(t); y = 0.35 + 0.1 * sin(t); label = FREE;}
 
-    Fh = buildmesh(FW1(20 * nps) + F3(-7 * nps) + F2(-9 * nps) + F1(-7 * nps) + FW2(11 * nps) + OUT(8 * nps) + FW3(40 * nps) + IN(8 * nps));
-    Sh = buildmesh(SW(9 * nps) + F1(7 * nps) + F2(9 * nps) + F3(7 * nps));
+    Fh = buildmesh(FW1(20 * nps) + F3(-7 * nps) + F2(-9 * nps) + F1(-7 * nps) + FW2(11 * nps) + OUT(8 * nps) + FW3(40 * nps) + IN(8 * nps) + F4(10 * nps));
+    Sh = buildmesh(SW(9 * nps) + F1(7 * nps) + F2(9 * nps) + F3(7 * nps) + F4(-10 * nps));
 }
 
 savemesh(Fh, "meshes/FSI/" + fmsh + ".mesh");
