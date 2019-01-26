@@ -17,15 +17,15 @@ real epsilon = 1e-8;
 
 /*----------------------------------- Problem configurations -----------------------------------*/
 int case = getARGV("--case", 1);                                            // Test case
-real nu = getARGV("--nu", 0.05);                                            // The kinematic viscosity coefficient of fluid
-real E = getARGV("--E", 2.1e8);                                             // The Young modulus of solid
+real nu = getARGV("--nu", 0.005);                                           // The kinematic viscosity coefficient of fluid
+real E = getARGV("--E", 1.5);                                               // The Young modulus of solid
 real nus = getARGV("--nus", 0.3);                                           // The Poisson ratio of solid
 real vf = getARGV("--vf", 1.) ;                                             // Volume fraction
 real w = getARGV("--w", 1.0);                                               // Weight parameter of the objective function                                                                   
 /*----------------------------------------------------------------------------------------------*/
 
 /*---------------------------------- Numerical configurations ----------------------------------*/                                                                
-real b0 = getARGV("--b0", 1e-2);                                            // Initial value of b
+real b0 = getARGV("--b0", 1e-1);                                            // Initial value of b
 real bmax = getARGV("--bmax", 1e2);                                         // Maximal value of b, no longer update if b > bmax
 real l0 = getARGV("--l0", 0.0);                                             // Initial value of l
 real gm = getARGV("--gm", 0.01);                                            // Regularization parameter 
@@ -82,10 +82,6 @@ if(case == 1)
     vout1 = 0.0; vout2 = 0.0;
 
     fs1 = 0.0; fs2 = 0.0;
-
-    E = 3.0e9;
-    nus = 0.3;
-    nu = 1.002;
 }
 else if(case == 2)
 {
@@ -94,6 +90,10 @@ else if(case == 2)
     vout1 = 0.0; vout2 = 0.0;
 
     fs1 = 0.0; fs2 = 0.0;
+
+    E = 2.1;
+    nu = 0.05;
+    nus = 0.3;
 }
 else if(case == 3)
 {
@@ -162,22 +162,22 @@ problem adjointstokes2D([va1, va2, pa], [vt1, vt2, pt]) =
 
 problem solidelliptic2D([ds1, ds2], [dst1, dst2]) = 
     int2d(Sh)(gm * dot(Jaco2(ds1, ds2), Jaco2(dst1, dst2)))
-        // + int2d(Sh)(dot([ds1, ds2], [dst1, dst2]))
-        + int1d(Sh, FREE)((1 - gm) * (dot(tgrad2(ds1), tgrad2(dst1)) + dot(tgrad2(ds2), tgrad2(dst2))))
+        + int2d(Sh)(dot([ds1, ds2], [dst1, dst2]))
+        // + int1d(Sh, FREE)((1 - gm) * (dot(tgrad2(ds1), tgrad2(dst1)) + dot(tgrad2(ds2), tgrad2(dst2))))
         + int1d(Sh, FREE)(dL * dot([dst1, dst2], N2))
         + on(SLOAD, SWALL, ds1 = 0.0, ds2 = 0.0);
 
 problem fluidelliptic2D([df1, df2], [dft1, dft2]) = 
     int2d(Fh)(gm * dot(Jaco2(df1, df2), Jaco2(dft1, dft2)))
-        // + int2d(Fh)(dot([df1, df2], [dft1, dft2]))
-        + int1d(Fh, FREE)((1 - gm) * (dot(tgrad2(df1), tgrad2(dft1)) + dot(tgrad2(df2), tgrad2(dft2))))
+        + int2d(Fh)(dot([df1, df2], [dft1, dft2]))
+        // + int1d(Fh, FREE)((1 - gm) * (dot(tgrad2(df1), tgrad2(dft1)) + dot(tgrad2(df2), tgrad2(dft2))))
         + on(FREE, df1 = ds1, df2 = ds2)
         + on(FIN, FWALL, FOUT, SWALL, df1 = 0.0, df2 = 0.0);
 
 problem streamlines(psi, psit) =
 int2d(Fh)(dx(psi) * dx(psit) + dy(psi) * dy(psit))
     + int2d(Fh)(-psit * (dy(v1) - dx(v2)))
-    + on(FIN, FWALL, FOUT, FREE, SWALL, psi=0);
+    + on(FIN, FWALL, FOUT, FREE, SWALL, psi = 0);
 
 
 macro solvestate()
@@ -201,6 +201,12 @@ macro solveregex()
         ds1 = ds1 * cut;
         ds2 = ds2 * cut;
     }
+    else if(case == 3)
+    {
+        func cut = (1 - (x >= 2.0) * (x <= 2.15) * (y <= 0.7)) * (1 - (y < 0.02));
+        ds1 = ds1 * cut;
+        ds2 = ds2 * cut;
+    }
     fluidelliptic2D;
 } //EOM
 
@@ -209,8 +215,9 @@ macro solveregex()
 /*----------------------------------------- Main block -----------------------------------------*/
 /* Initial values */
 solvestate;
+plot(Fh, Sh, [v1, v2], [u1, u2]);                                                               // TODO
 J0 = J;
-vol0 = vol(Sh) + vol(Fh);
+vol0 = vol(Sh);
 convol = vol0 * vf;
 fout << J0 << " " <<  L << " " << vol(Sh) << " " << l0 << " " << b0 << endl;
 
@@ -225,9 +232,9 @@ while(i < imax && sgn > minsgn)
     solveregex;
     sgn = sqrt(int1d(Sh, FREE)(ds1^2 + ds2^2));
     
-    Fh = adaptmesh(Fh, hmax = mshsize, hmin = mshsize / sqrt(2));
-    Sh = adaptmesh(Sh, hmax = mshsize, hmin = mshsize / sqrt(2));
-    plot(Fh, Sh, [df1, df2], [ds1, ds2], cmm = "Iteration " + i + "/" + imax);
+    Fh = adaptmesh(Fh, hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
+    Sh = adaptmesh(Sh, hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
+    plot(Fh, Sh, [df1, df2], [ds1, ds2], cmm = "Iteration i = " + i + "/" + imax);
 
     real tau = tau0;
     real fminarea = checkmovemesh(Fh, [x + tau * df1, y + tau * df2]);
@@ -239,7 +246,7 @@ while(i < imax && sgn > minsgn)
     while(j < jmax && !(fminarea >= minarea && sminarea >= minarea))
     {
         j++;
-        cout << "Step length = " << tau << endl;
+        cout << "Iteration j = " << j << "/" << jmax << ": Step length = " << tau << endl;
         tau *= beta;
         fminarea = checkmovemesh(Fh, [x + tau * df1, y + tau * df2]);
         sminarea = checkmovemesh(Sh, [x + tau * ds1, y + tau * ds2]);
@@ -254,6 +261,7 @@ while(i < imax && sgn > minsgn)
         Fh = movemesh(Fh, [x + tau * df1, y + tau * df2]);
         Sh = movemesh(Sh, [x + tau * ds1, y + tau * ds2]);
         solvestate;
+        plot(Fh, Sh, [v1, v2], [u1, u2]);                                                       // TODO
         real afterL = L;
 
         int k = 0;
@@ -263,7 +271,7 @@ while(i < imax && sgn > minsgn)
         while(k < kmax && !(afterL < beforeL + sm * tau * dd))
         {
             k++;
-            cout << "Step length = " << tau << endl;
+            cout << "Iteration k = " << k << "/" << kmax << ": Step length = " << tau << endl;
             tau *= beta;
             Fh = tmpFh;
             Sh = tmpSh;
@@ -279,6 +287,7 @@ while(i < imax && sgn > minsgn)
         {
             l = l - b * (vol(Sh) - convol)/vol0;
             b = (b < bmax) ? b * alpha : bmax;
+            cout << "b = " << b << endl;
         }
         else
         {
