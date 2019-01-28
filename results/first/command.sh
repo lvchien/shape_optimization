@@ -1,1 +1,1 @@
-FreeFem++ FSI2D_main.edp --folder results/first --fmsh fluid1 --smsh solid1 --vf 0.025 --mshsize 0.02 
+FreeFem++ FSI2D_main.edp --case 3 --fmsh fluid3 --smsh solid3 --folder results/first --vf 0.4 

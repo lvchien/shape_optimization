@@ -1,20 +1,40 @@
-load "medit";
-
-int nn = 2;
+include "operators.edp"
 
 int DIR = 1;
 int FREE = 2;
-int DUMMY = -1;
+int nn = 10;
+real nu = 0.05;
+real epsilon = 1e-8;
 
-border L1(t = 0.0, 1.0){x = t; y = 0.0; label = FREE;}
-border L2(t = 0.0, 1.0){x = 1.0; y = t; label = FREE;}
-border L3(t = 1.0, 0.0){x = t; y = 1.0; label = DIR;}
+border L11(t = 0.0, 1.0){x = t; y = 0.0; label = FREE;}
+border L12(t = 0.0, 1.0){x = 1.0; y = t; label = FREE;}
+border L13(t = 1.0, 0.0){x = t; y = 1.0; label = DIR;}
 border L4(t = 1.0, 0.0){x = 0.0; y = t; label = FREE;}
 
-mesh Th = buildmesh(L1(5 * nn) + L2(5 * nn) + L3(5 * nn) + L4(5 * nn));
-fespace Vh(Th, P2);
-fespace Ph(Th, P1);
+border L21(t = 0.0, 0.8){x = t; y = 0.0; label = FREE;}
+border L22(t = 0.0, 1.0){x = 0.8; y = t; label = FREE;}
+border L23(t = 0.8, 0.0){x = t; y = 1.0; label = DIR;}
 
-Vh u = 1.5;
+mesh Th1 = buildmesh(L11(5 * nn) + L12(5 * nn) + L13(5 * nn) + L4(5 * nn));
+// mesh Th2 = buildmesh(L21(4 * nn) + L22(4 * nn) + L23(4 * nn) + L4(5 * nn));
+mesh Th2 = Th1 * (x < 0.8);
+plot(Th2);
 
-plot(Th, [u, u]);
+fespace Vh1(Th1, P2);
+fespace Ph1(Th1, P1);
+
+fespace Vh2(Th2, P2);
+fespace Ph2(Th2, P1);
+
+Vh2 v1, v2, vt1, vt2;
+Ph2 p, pt;
+
+solve stokes2D([v1, v2, p], [vt1, vt2, pt]) = 
+    int2d(Th2)(2.0 * nu * dot(eps2(v1, v2), eps2(vt1, vt2)) - p * div2(vt1, vt2) - pt * div2(v1, v2))
+        - int2d(Th2)(p * pt * epsilon)
+        + on(DIR, v1 = 1.0, v2 = 0.0)
+        + on(FREE, v1 = 0.0, v2 = 0.0);
+
+Vh1 u1 = v1, u2 = v2;
+
+plot(Th1, [u1, u2]);

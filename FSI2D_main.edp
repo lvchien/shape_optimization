@@ -17,8 +17,8 @@ real epsilon = 1e-8;
 
 /*----------------------------------- Problem configurations -----------------------------------*/
 int case = getARGV("--case", 1);                                            // Test case
-real nu = getARGV("--nu", 0.005);                                           // The kinematic viscosity coefficient of fluid
-real E = getARGV("--E", 1.5);                                               // The Young modulus of solid
+real nu = getARGV("--nu", 0.05);                                            // The kinematic viscosity coefficient of fluid
+real E = getARGV("--E", 21.0);                                              // The Young modulus of solid
 real nus = getARGV("--nus", 0.3);                                           // The Poisson ratio of solid
 real vf = getARGV("--vf", 1.) ;                                             // Volume fraction
 real w = getARGV("--w", 1.0);                                               // Weight parameter of the objective function                                                                   
@@ -90,10 +90,6 @@ else if(case == 2)
     vout1 = 0.0; vout2 = 0.0;
 
     fs1 = 0.0; fs2 = 0.0;
-
-    E = 2.1;
-    nu = 0.05;
-    nus = 0.3;
 }
 else if(case == 3)
 {
@@ -162,15 +158,15 @@ problem adjointstokes2D([va1, va2, pa], [vt1, vt2, pt]) =
 
 problem solidelliptic2D([ds1, ds2], [dst1, dst2]) = 
     int2d(Sh)(gm * dot(Jaco2(ds1, ds2), Jaco2(dst1, dst2)))
-        + int2d(Sh)(dot([ds1, ds2], [dst1, dst2]))
-        // + int1d(Sh, FREE)((1 - gm) * (dot(tgrad2(ds1), tgrad2(dst1)) + dot(tgrad2(ds2), tgrad2(dst2))))
+        // + int2d(Sh)(dot([ds1, ds2], [dst1, dst2]))
+        + int1d(Sh, FREE)((1 - gm) * (dot(tgrad2(ds1), tgrad2(dst1)) + dot(tgrad2(ds2), tgrad2(dst2))))
         + int1d(Sh, FREE)(dL * dot([dst1, dst2], N2))
         + on(SLOAD, SWALL, ds1 = 0.0, ds2 = 0.0);
 
 problem fluidelliptic2D([df1, df2], [dft1, dft2]) = 
     int2d(Fh)(gm * dot(Jaco2(df1, df2), Jaco2(dft1, dft2)))
-        + int2d(Fh)(dot([df1, df2], [dft1, dft2]))
-        // + int1d(Fh, FREE)((1 - gm) * (dot(tgrad2(df1), tgrad2(dft1)) + dot(tgrad2(df2), tgrad2(dft2))))
+        // + int2d(Fh)(dot([df1, df2], [dft1, dft2]))
+        + int1d(Fh, FREE)((1 - gm) * (dot(tgrad2(df1), tgrad2(dft1)) + dot(tgrad2(df2), tgrad2(dft2))))
         + on(FREE, df1 = ds1, df2 = ds2)
         + on(FIN, FWALL, FOUT, SWALL, df1 = 0.0, df2 = 0.0);
 
@@ -215,7 +211,7 @@ macro solveregex()
 /*----------------------------------------- Main block -----------------------------------------*/
 /* Initial values */
 solvestate;
-plot(Fh, Sh, [v1, v2], [u1, u2]);                                                               // TODO
+plot(Fh, Sh, [v1, v2], [u1, u2]);                                                               
 J0 = J;
 vol0 = vol(Sh);
 convol = vol0 * vf;
@@ -261,13 +257,14 @@ while(i < imax && sgn > minsgn)
         Fh = movemesh(Fh, [x + tau * df1, y + tau * df2]);
         Sh = movemesh(Sh, [x + tau * ds1, y + tau * ds2]);
         solvestate;
-        plot(Fh, Sh, [v1, v2], [u1, u2]);                                                       // TODO
+        plot(Fh, Sh, [v1, v2], [u1, u2]); 
         real afterL = L;
 
         int k = 0;
         int kmax = 30;
 
         real dd = int1d(Sh, FREE)(dL * dot([ds1, ds2], N2));
+        cout << "Directional derivative: " << dd << endl;
         while(k < kmax && !(afterL < beforeL + sm * tau * dd))
         {
             k++;
@@ -287,7 +284,6 @@ while(i < imax && sgn > minsgn)
         {
             l = l - b * (vol(Sh) - convol)/vol0;
             b = (b < bmax) ? b * alpha : bmax;
-            cout << "b = " << b << endl;
         }
         else
         {
