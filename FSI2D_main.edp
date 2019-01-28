@@ -114,10 +114,10 @@ real J0, vol0, convol;
 
 
 /*-------------------------- Declare functions and their derivatives --------------------------*/
-macro compliance() (int2d(Sh)(2.0 * mu * dot(eps2(u1, u2), eps2(u1, u2)) + lambda * div2(u1, u2) ^ 2)) //EOM
+macro compliance() (int2d(Sh)(2.0 * mu * dot(eps2(u1, u2), eps2(u1, u2)) + lambda * div2(u1, u2) * div2(u1, u2))) //EOM
 macro dissipatedenergy() (int2d(Fh)(2.0 * nu * dot(eps2(v1, v2), eps2(v1, v2)))) //EOM
 macro J() (w * compliance + (1.0 - w) * dissipatedenergy) //EOM
-macro dJ() (w * (2.0 * mu * dot(eps2(u1, u2), eps2(u1, u2)) + lambda * div2(u1, u2) ^ 2)
+macro dJ() (w * (2.0 * mu * dot(eps2(u1, u2), eps2(u1, u2)) + lambda * div2(u1, u2) * div2(u1, u2))
             + 2.0 * (1 - w) * nu * dot(eps2(v1, v2), eps2(v1, v2))
             - (fs1 * ua1 + fs2 * ua2) + (ff1 * va1 + ff2 * va2)
             + 2.0 * mu * dot(eps2(u1, u2), eps2(ua1, ua2)) + lambda * div2(u1, u2) * div2(ua1, ua2)
@@ -305,10 +305,10 @@ while(i < imax && sgn > minsgn)
     fout << J << " " <<  L << " " << vol(Sh) << " " << l << " " << b << endl;
     if(i % steps == 0)
     {
-        savesol(folder + "/fmesh." + j/steps + ".sol", Fh, [v1, v2]);
-        savesol(folder + "/smesh." + j/steps + ".sol", Sh, [u1, u2]);
-        savemesh(Fh, folder + "/fmesh." + j/steps + ".mesh");
-        savemesh(Sh, folder + "/smesh." + j/steps + ".mesh");
+        savesol(folder + "/fmesh." + i/steps + ".sol", Fh, [v1, v2]);
+        savesol(folder + "/smesh." + i/steps + ".sol", Sh, [u1, u2]);
+        savemesh(Fh, folder + "/fmesh." + i/steps + ".mesh");
+        savemesh(Sh, folder + "/smesh." + i/steps + ".mesh");
     }
 }
 if(sgn < minsgn)
@@ -321,4 +321,4 @@ savesol(folder + "/fmesh_final.sol", Fh, [v1, v2]);
 savesol(folder + "/smesh_final.sol", Sh, [u1, u2]);
 savemesh(Fh, folder + "/fmesh_final.mesh");
 savemesh(Sh, folder + "/smesh_final.mesh");
-plot(Fh, Sh);
+plot(Sh);
