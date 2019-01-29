@@ -10,6 +10,7 @@ int FIN = 12;                                                               // N
 int FOUT = 13;                                                              // Neumann boundary of fluid domain
 int SWALL = 21;                                                             // Homogeneous Dirichlet boundary of solid domain
 int SLOAD = 22;                                                             // Neumann boundary of solid domain
+int DUMMY = 30;                                                             // Dummy boundary
 
 
 /* Constants */
@@ -82,10 +83,12 @@ Dh d1, d2, dt1, dt2;
 if(case == 1)
 {
     ff1 = 0.0; ff2 = 0.0;
-    vin1 = 1.2 * y * (1.0 - y); vin2 = 0.0;
+    vin1 = 16 * y * (0.5 - y); vin2 = 0.0;
     vout1 = 0.0; vout2 = 0.0;
 
     fs1 = 0.0; fs2 = 0.0;
+
+    E = 3.039; nu = 1.002e-3; nus = 0.3;
 }
 else if(case == 2)
 {
@@ -167,11 +170,17 @@ int2d(Fh)(dx(psi) * dx(psit) + dy(psi) * dy(psit))
     + int2d(Fh)(-psit * (dy(v1) - dx(v2)))
     + on(FIN, FWALL, FOUT, FREE, SWALL, psi = 0);
 
+problem solveregex1([d1, d2], [dt1, dt2]) = 
+  int2d(Th)(gm * dot(Jaco2(d1, d2), Jaco2(dt1, dt2)))
+       + int2d(Th)(dot([d1, d2], [dt1, dt2]))
+       + int1d(Sh, FREE)(dL * dot([dt1, dt2], N2))
+       + on(SLOAD, SWALL, FWALL, FIN, FOUT, DUMMY, d1 = 0.0, d2 = 0.0);
+
 problem solveregex([d1, d2], [dt1, dt2]) = 
-    int2d(Th)(gm * dot(Jaco2(d1, d2), Jaco2(dt1, dt2)))
-        + int2d(Th)(dot([d1, d2], [dt1, dt2]))
+     int2d(Th)(gm * (2 * mu * dot(eps2(d1, d2), eps2(dt1, dt2)) + lambda * div2(d1, d2) * div2(dt1, dt2)))
+        // + int2d(Th)(dot([d1, d2], [dt1, dt2]))
         + int1d(Sh, FREE)(dL * dot([dt1, dt2], N2))
-        + on(SLOAD, SWALL, FWALL, FIN, FOUT, d1 = 0.0, d2 = 0.0);
+        + on(SLOAD, SWALL, FWALL, FIN, FOUT, DUMMY, d1 = 0.0, d2 = 0.0);
 
 macro solvestate()
 {
@@ -193,7 +202,7 @@ solvestate;
 plot(Fh, Sh, [v1, v2], [u1, u2]);                                                               
 J0 = J;
 vol0 = vol(Sh);
-convol = vol0 * vf;
+convol = (vol(Sh) + vol(Fh)) * vf;
 fout << J0 << " " <<  L << " " << vol(Sh) << " " << l0 << " " << b0 << endl;
 
 int i = 0;
@@ -209,8 +218,8 @@ while(i < imax && sgn > minsgn)
     real dd = int1d(Sh, FREE)(dL * dot([d1, d2], N2));
     cout << "Directional derivative: " << dd << endl;
     
-    Fh = adaptmesh(Fh, [d1, d2], hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
-    Sh = adaptmesh(Sh, [d1, d2], hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
+    Fh = adaptmesh(Fh, hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
+    Sh = adaptmesh(Sh, hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
     plot(Th, [d1, d2], cmm = "Iteration i = " + i + "/" + imax);
 
     real tau = tau0;

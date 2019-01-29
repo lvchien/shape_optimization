@@ -3,6 +3,7 @@ include "getARGV.idp"
 int case = getARGV("--case", 1);                                // Case study
 string fmsh = getARGV("--fmsh", "fluid");                       // File name of the mesh of fluid domain
 string smsh = getARGV("--smsh", "solid");                       // File name of the mesh of solid domain
+string dmsh = getARGV("--dmsh", "domain");                      // File name of the mesh of whole domain
 int nps = getARGV("--nps", 3);                                  // Number of meshing points
 
 /* Label of borders */
@@ -21,23 +22,28 @@ system("mkdir " + "meshes/FSI");
 /* Build meshes */
 if(case == 1)
 {
-    border FW1(t = 0.0, 1.7){x = t; y = 0.0; label = FWALL;}
-    border F1(t = 0.0, 0.6){x = 1.7; y = t; label = FREE;}
-    border F2(t = 1.7, 2.3){x = t; y = 0.6; label = FREE;}
-    border F3(t = 0.6, 0.0){x = 2.3; y = t; label = FREE;}
-    border FW2(t = 2.3, 4.0){x = t; y = 0.0; label = FWALL;}
-    border OUT(t = 0.0, 1.0){x = 4.0; y = t; label = FOUT;}
-    border FW3(t = 4.0, 0.0){x = t; y = 1.0; label = FWALL;}
-    border IN(t = 1.0, 0.0){x = 0.0; y = t; label = FIN;}
-    border SW(t = 1.7, 2.3){x = t; y = 0.0; label = SWALL;}
-    border F4(t = 0, 2 * pi){x = 1.85 + 0.1 * cos(t); y = 0.3 + 0.1 * sin(t); label = FREE;}
-    border F5(t = 0, 2 * pi){x = 2.15 + 0.1 * cos(t); y = 0.3 + 0.1 * sin(t); label = FREE;}
-    border D1(t = 0, 0.01){x = 1.7; y = t; label = DUMMY;}
-    border D2(t = 1.7, 1.95){}
+    border FW1(t = 0.0, 0.3){x = t; y = 0.0; label = FWALL;}
+    border F1(t = 0.0, 0.3){x = 0.3; y = t; label = FREE;}
+    border F2(t = 0.3, 0.7){x = t; y = 0.3; label = FREE;}
+    border F3(t = 0.3, 0.0){x = 0.7; y = t; label = FREE;}
+    border FW2(t = 0.7, 2.0){x = t; y = 0.0; label = FWALL;}
+    border OUT(t = 0.0, 0.5){x = 2.0; y = t; label = FOUT;}
+    border FW3(t = 2.0, 0.0){x = t; y = 0.5; label = FWALL;}
+    border IN(t = 0.5, 0.0){x = 0.0; y = t; label = FIN;}
+    border SW(t = 0.3, 0.7){x = t; y = 0.0; label = SWALL;}
+    border F4(t = 0, 2 * pi){x = 0.4 + 0.05 * cos(t); y = 0.1 + 0.05 * sin(t); label = FREE;}
+    border D1(t = 0, 0.01){x = 0.3; y = t; label = DUMMY;}
+    border D2(t = 0.3, 0.48){x = t; y = 0.01; label = DUMMY;}
+    border D3(t = 0.01, 0.3){x = 0.48; y = t; label = DUMMY;}
+    border D4(t = 0.48, 0.52){x = t; y = 0.3; label = DUMMY;}
+    border D5(t = 0.3, 0.01){x = 0.52; y = t; label = DUMMY;}
+    border D6(t = 0.52, 0.7){x = t; y = 0.01; label = DUMMY;}
+    border D7(t = 0.01, 0){x = 0.7; y = t; label = DUMMY;}
 
-    Fh = buildmesh(FW1(17 * nps) + F1(18 * nps) + F2(18 * nps) + F3(18 * nps) + FW2(17 * nps) + OUT(10 * nps) + FW3(40 * nps) + IN(10 * nps) + F4(20 * nps) + F5(20 * nps));
-    Sh = buildmesh(SW(18 * nps) + F1(-18 * nps) + F2(-18 * nps) + F3(-18 * nps) + F4(-20 * nps) + F5(-20 * nps));
-    Th = buildmesh(FW1(17 * nps) + FF1(18 * nps) + FF2(18 * nps) + FF3(18 * nps) + FW2(17 * nps) + OUT(10 * nps) + FW3(40 * nps) + IN(10 * nps))
+    Fh = buildmesh(FW1(6 * nps) + F1(18 * nps) + F2(24 * nps) + F3(18 * nps) + FW2(26 * nps) + OUT(10 * nps) + FW3(40 * nps) + IN(10 * nps) + F4(20 * nps));
+    Sh = buildmesh(SW(24 * nps) + F1(-18 * nps) + F2(-24 * nps) + F3(-18 * nps) + F4(-20 * nps));
+    Th = buildmesh(FW1(30 * nps) + D1(1 * nps) + D2(18 * nps) + D3(29 * nps) + D4(4 * nps) + D5(29 * nps) + D6(18 * nps) + D7(1 * nps) 
+        + FW2(130 * nps) + OUT(50 * nps) + FW3(200 * nps) + IN(50 * nps));
 }
 else if(case == 2)
 {
@@ -77,5 +83,6 @@ else if(case == 3)
 
 savemesh(Fh, "meshes/FSI/" + fmsh + ".mesh");
 savemesh(Sh, "meshes/FSI/" + smsh + ".mesh");
-savemesh(Th, "meshes/FSI/domain2.mesh");
-plot(Fh, Sh);
+savemesh(Th, "meshes/FSI/" + dmsh + ".mesh");
+plot(Fh);
+// plot(Th);
