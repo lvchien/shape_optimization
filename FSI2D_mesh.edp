@@ -13,6 +13,7 @@ int FOUT = 13;
 int SWALL = 21;
 int SDEFO = 22;
 int SLOAD = 23;
+int DUMMY = 30;
 
 mesh Fh, Sh, Th;
 system("mkdir " + "meshes/FSI");
@@ -21,23 +22,22 @@ system("mkdir " + "meshes/FSI");
 if(case == 1)
 {
     border FW1(t = 0.0, 1.7){x = t; y = 0.0; label = FWALL;}
-    border FF1(t = 0.0, 0.6){x = 1.7; y = t; label = FREE;}
-    border FF2(t = 1.7, 2.3){x = t; y = 0.6; label = FREE;}
-    border FF3(t = 0.6, 0.0){x = 2.3; y = t; label = FREE;}
+    border F1(t = 0.0, 0.6){x = 1.7; y = t; label = FREE;}
+    border F2(t = 1.7, 2.3){x = t; y = 0.6; label = FREE;}
+    border F3(t = 0.6, 0.0){x = 2.3; y = t; label = FREE;}
     border FW2(t = 2.3, 4.0){x = t; y = 0.0; label = FWALL;}
     border OUT(t = 0.0, 1.0){x = 4.0; y = t; label = FOUT;}
     border FW3(t = 4.0, 0.0){x = t; y = 1.0; label = FWALL;}
     border IN(t = 1.0, 0.0){x = 0.0; y = t; label = FIN;}
     border SW(t = 1.7, 2.3){x = t; y = 0.0; label = SWALL;}
-    border FS1(t = 0.0, 0.6){x = 2.3; y = t; label = FREE;}
-    border FS2(t = 2.3, 1.7){x = t; y = 0.6; label = FREE;}
-    border FS3(t = 0.6, 0.0){x = 1.7; y = t; label = FREE;}
     border F4(t = 0, 2 * pi){x = 1.85 + 0.1 * cos(t); y = 0.3 + 0.1 * sin(t); label = FREE;}
     border F5(t = 0, 2 * pi){x = 2.15 + 0.1 * cos(t); y = 0.3 + 0.1 * sin(t); label = FREE;}
+    border D1(t = 0, 0.01){x = 1.7; y = t; label = DUMMY;}
+    border D2(t = 1.7, 1.95){}
 
-
-    Fh = buildmesh(FW1(17 * nps) + FF1(18 * nps) + FF2(18 * nps) + FF3(18 * nps) + FW2(17 * nps) + OUT(10 * nps) + FW3(40 * nps) + IN(10 * nps) + F4(20 * nps) + F5(20 * nps));
-    Sh = buildmesh(SW(18 * nps) + FS1(18 * nps) + FS2(18 * nps) + FS3(18 * nps) + F4(-20 * nps) + F5(-20 * nps));
+    Fh = buildmesh(FW1(17 * nps) + F1(18 * nps) + F2(18 * nps) + F3(18 * nps) + FW2(17 * nps) + OUT(10 * nps) + FW3(40 * nps) + IN(10 * nps) + F4(20 * nps) + F5(20 * nps));
+    Sh = buildmesh(SW(18 * nps) + F1(-18 * nps) + F2(-18 * nps) + F3(-18 * nps) + F4(-20 * nps) + F5(-20 * nps));
+    Th = buildmesh(FW1(17 * nps) + FF1(18 * nps) + FF2(18 * nps) + FF3(18 * nps) + FW2(17 * nps) + OUT(10 * nps) + FW3(40 * nps) + IN(10 * nps))
 }
 else if(case == 2)
 {
