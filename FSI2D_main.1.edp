@@ -42,7 +42,6 @@ real mshsize = getARGV("--mshsize", 0.02);                                  // R
 /*------------------------------------ IO configurations -------------------------------------*/
 string fmsh = getARGV("--fmsh", "fluid");                                   // File name of fluid domain's mesh
 string smsh = getARGV("--smsh", "solid");                                   // File name of solid domain's mesh
-string dmsh = getARGV("--dmsh", "solid");                                   // File name of whole domain's mesh
 string folder = getARGV("--folder", "results");                             // folder contains output
 int steps = getARGV("--steps", 3);                                          // number of steps to save results once
 /*--------------------------------------------------------------------------------------------*/
@@ -60,7 +59,6 @@ cmd.flush;
 /* Load mesh */
 mesh Fh = readmesh("meshes/FSI/" + fmsh + ".mesh");
 mesh Sh = readmesh("meshes/FSI/" + smsh + ".mesh");
-mesh Th = readmesh("meshes/FSI/" + dmsh + ".mesh");
 plot(Fh, Sh);
 cout << "Done load meshes!" << endl;
 
@@ -68,14 +66,12 @@ cout << "Done load meshes!" << endl;
 fespace FVh(Fh, P2);
 fespace FPh(Fh, P1);
 fespace SUh(Sh, P1);
-fespace Dh(Th, P1);
 
 
 /* Declare FE variables */
 FVh v1, v2, va1, va2, vt1, vt2, ff1, ff2, vin1, vin2, vw1, vw2, vout1, vout2;
-FPh p, pa, pt, psi, psit, df1, df2;
-SUh u1, u2, ua1, ua2, ut1, ut2, fs1, fs2, uload1, uload2, ds1, ds2;
-Dh d1, d2, dt1, dt2;
+FPh p, pa, pt, psi, psit, df1, df2, dft1, dft2;
+SUh u1, u2, ua1, ua2, ut1, ut2, fs1, fs2, uload1, uload2, ds1, ds2, dst1, dst2;
 
 
 /*-------------------------- Set initial values for each test case --------------------------*/
@@ -162,16 +158,25 @@ problem adjointstokes2D([va1, va2, pa], [vt1, vt2, pt]) =
         + on(FWALL, SWALL, FIN, va1 = 0.0, va2 = 0.0)
         + on(FREE, va1 = ua1, va2 = ua2);
 
+problem solidelliptic2D([ds1, ds2], [dst1, dst2]) = 
+    int2d(Sh)(gm * dot(Jaco2(ds1, ds2), Jaco2(dst1, dst2)))
+        + int2d(Sh)(dot([ds1, ds2], [dst1, dst2]))
+        // + int1d(Sh, FREE)((1 - gm) * (dot(tgrad2(ds1), tgrad2(dst1)) + dot(tgrad2(ds2), tgrad2(dst2))))
+        + int1d(Sh, FREE)(dL * dot([dst1, dst2], N2))
+        + on(SLOAD, SWALL, ds1 = 0.0, ds2 = 0.0);
+
+problem fluidelliptic2D([df1, df2], [dft1, dft2]) = 
+    int2d(Fh)(gm * dot(Jaco2(df1, df2), Jaco2(dft1, dft2)))
+        + int2d(Fh)(dot([df1, df2], [dft1, dft2]))
+        // + int1d(Fh, FREE)((1 - gm) * (dot(tgrad2(df1), tgrad2(dft1)) + dot(tgrad2(df2), tgrad2(dft2))))
+        + on(FREE, df1 = ds1, df2 = ds2)
+        + on(FIN, FWALL, FOUT, SWALL, df1 = 0.0, df2 = 0.0);
+
 problem streamlines(psi, psit) =
 int2d(Fh)(dx(psi) * dx(psit) + dy(psi) * dy(psit))
     + int2d(Fh)(-psit * (dy(v1) - dx(v2)))
     + on(FIN, FWALL, FOUT, FREE, SWALL, psi = 0);
 
-problem solveregex([d1, d2], [dt1, dt2]) = 
-    int2d(Th)(gm * dot(Jaco2(d1, d2), Jaco2(dt1, dt2)))
-        + int2d(Th)(dot([d1, d2], [dt1, dt2]))
-        + int1d(Sh, FREE)(dL * dot([dt1, dt2], N2))
-        + on(SLOAD, SWALL, FWALL, FIN, FOUT, d1 = 0.0, d2 = 0.0);
 
 macro solvestate()
 {
@@ -185,6 +190,23 @@ macro solveadjoint()
     adjointstokes2D;
 } //EOM
 
+macro solveregex()
+{
+    solidelliptic2D;
+    if(case == 1)
+    {
+        func cut = (1 - (x > 1.95) * (x < 2.05) * (y < 0.5)) * (1 - (y < 0.01));
+        ds1 = ds1 * cut;
+        ds2 = ds2 * cut;
+    }
+    else if(case == 3)
+    {
+        func cut = (1 - (x >= 2.0) * (x <= 2.15) * (y <= 0.7)) * (1 - (y < 0.02));
+        ds1 = ds1 * cut;
+        ds2 = ds2 * cut;
+    }
+    fluidelliptic2D;
+} //EOM
 /*----------------------------------------------------------------------------------------------*/
 
 /*----------------------------------------- Main block -----------------------------------------*/
@@ -205,17 +227,17 @@ while(i < imax && sgn > minsgn)
     i++;
     solveadjoint;
     solveregex;
-    sgn = sqrt(int1d(Sh, FREE)(d1^2 + d2^2));
-    real dd = int1d(Sh, FREE)(dL * dot([d1, d2], N2));
+    sgn = sqrt(int1d(Sh, FREE)(ds1^2 + ds2^2));
+    real dd = int1d(Sh, FREE)(dL * dot([ds1, ds2], N2));
     cout << "Directional derivative: " << dd << endl;
     
-    Fh = adaptmesh(Fh, [d1, d2], hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
-    Sh = adaptmesh(Sh, [d1, d2], hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
-    plot(Th, [d1, d2], cmm = "Iteration i = " + i + "/" + imax);
+    Fh = adaptmesh(Fh, hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
+    Sh = adaptmesh(Sh, hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
+    plot(Fh, Sh, [df1, df2], [ds1, ds2], cmm = "Iteration i = " + i + "/" + imax);
 
     real tau = tau0;
-    real fminarea = checkmovemesh(Fh, [x + tau * d1, y + tau * d2]);
-    real sminarea = checkmovemesh(Sh, [x + tau * d1, y + tau * d2]);
+    real fminarea = checkmovemesh(Fh, [x + tau * df1, y + tau * df2]);
+    real sminarea = checkmovemesh(Sh, [x + tau * ds1, y + tau * ds2]);
 
     int j = 0;
     int jmax = 30;
@@ -225,8 +247,8 @@ while(i < imax && sgn > minsgn)
         j++;
         cout << "Iteration j = " << j << "/" << jmax << ": Step length = " << tau << endl;
         tau *= beta;
-        fminarea = checkmovemesh(Fh, [x + tau * d1, y + tau * d2]);
-        sminarea = checkmovemesh(Sh, [x + tau * d1, y + tau * d2]);
+        fminarea = checkmovemesh(Fh, [x + tau * df1, y + tau * df2]);
+        sminarea = checkmovemesh(Sh, [x + tau * ds1, y + tau * ds2]);
     }
 
     if(j < jmax)
@@ -235,8 +257,8 @@ while(i < imax && sgn > minsgn)
         mesh tmpSh = Sh;
         real beforeL = L;
         
-        Fh = movemesh(Fh, [x + tau * d1, y + tau * d2]);
-        Sh = movemesh(Sh, [x + tau * d1, y + tau * d2]);
+        Fh = movemesh(Fh, [x + tau * df1, y + tau * df2]);
+        Sh = movemesh(Sh, [x + tau * ds1, y + tau * ds2]);
         solvestate;
         plot(Fh, Sh, [v1, v2], [u1, u2]); 
         real afterL = L;
@@ -252,8 +274,8 @@ while(i < imax && sgn > minsgn)
             Fh = tmpFh;
             Sh = tmpSh;
 
-            Fh = movemesh(Fh, [x + tau * d1, y + tau * d2]);
-            Sh = movemesh(Sh, [x + tau * d1, y + tau * d2]);
+            Fh = movemesh(Fh, [x + tau * df1, y + tau * df2]);
+            Sh = movemesh(Sh, [x + tau * ds1, y + tau * ds2]);
             plot(Fh, Sh);
             solvestate;
             afterL = L;

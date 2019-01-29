@@ -14,7 +14,7 @@ int SWALL = 21;
 int SDEFO = 22;
 int SLOAD = 23;
 
-mesh Fh, Sh;
+mesh Fh, Sh, Th;
 system("mkdir " + "meshes/FSI");
 
 /* Build meshes */
@@ -56,6 +56,7 @@ else if(case == 2)
 
     Fh = buildmesh(FW1(4 * nps) + FW2(2 * nps) + FW3(10 * nps) + OUT(6 * nps) + FW4(10 * nps) + FW5(2 * nps) + FW6(4 * nps) + IN(2 * nps) + SW1(-1 * nps) + F1(-4 * nps) + SW2(-1 * nps) + F2(-4 * nps));
     Sh = buildmesh(SW1(1 * nps) + F1(4 * nps) + SW2(1 * nps) + F2(4 * nps));
+    Th = buildmesh(FW1(4 * nps) + FW2(2 * nps) + FW3(10 * nps) + OUT(6 * nps) + FW4(10 * nps) + FW5(2 * nps) + FW6(4 * nps) + IN(2 * nps));
 }
 else if(case == 3)
 {
@@ -76,4 +77,5 @@ else if(case == 3)
 
 savemesh(Fh, "meshes/FSI/" + fmsh + ".mesh");
 savemesh(Sh, "meshes/FSI/" + smsh + ".mesh");
+savemesh(Th, "meshes/FSI/domain2.mesh");
 plot(Fh, Sh);
