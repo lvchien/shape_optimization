@@ -171,13 +171,13 @@ int2d(Fh)(dx(psi) * dx(psit) + dy(psi) * dy(psit))
     + on(FIN, FWALL, FOUT, FREE, SWALL, psi = 0);
 
 problem solveregex1([d1, d2], [dt1, dt2]) = 
-  int2d(Th)(gm * dot(Jaco2(d1, d2), Jaco2(dt1, dt2)))
+  int2d(Th)(gm * dot(eps2(d1, d2), eps2(dt1, dt2)))
        + int2d(Th)(dot([d1, d2], [dt1, dt2]))
        + int1d(Sh, FREE)(dL * dot([dt1, dt2], N2))
        + on(SLOAD, SWALL, FWALL, FIN, FOUT, DUMMY, d1 = 0.0, d2 = 0.0);
 
 problem solveregex([d1, d2], [dt1, dt2]) = 
-     int2d(Th)(gm * (2 * mu * dot(eps2(d1, d2), eps2(dt1, dt2)) + lambda * div2(d1, d2) * div2(dt1, dt2)))
+     int2d(Th)(2 * mu * dot(eps2(d1, d2), eps2(dt1, dt2)) + lambda * div2(d1, d2) * div2(dt1, dt2))
         // + int2d(Th)(dot([d1, d2], [dt1, dt2]))
         + int1d(Sh, FREE)(dL * dot([dt1, dt2], N2))
         + on(SLOAD, SWALL, FWALL, FIN, FOUT, DUMMY, d1 = 0.0, d2 = 0.0);
@@ -203,7 +203,7 @@ plot(Fh, Sh, [v1, v2], [u1, u2]);
 J0 = J;
 vol0 = vol(Sh);
 convol = (vol(Sh) + vol(Fh)) * vf;
-fout << J0 << " " <<  L << " " << vol(Sh) << " " << l0 << " " << b0 << endl;
+fout << J0 << " " <<  L << " " << vol(Sh) << " " << l0 << endl;
 
 int i = 0;
 int imax = 1000;
@@ -270,7 +270,7 @@ while(i < imax && sgn > minsgn)
 
         if(k < kmax)
         {
-            l = l - b * (vol(Sh) - convol)/vol0;
+            l = l - b * (vol(Sh) - convol);
             b = (b < bmax) ? b * alpha : bmax;
         }
         else
@@ -286,7 +286,7 @@ while(i < imax && sgn > minsgn)
     }
 
     /* Save post-processing data */
-    fout << J << " " <<  L << " " << vol(Sh) << " " << l << " " << b << endl;
+    fout << J << " " <<  L << " " << vol(Sh) << " " << l << endl;
     fout.flush;
     if(i % steps == 0)
     {
