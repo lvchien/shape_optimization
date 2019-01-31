@@ -88,7 +88,7 @@ if(case == 1)
 
     fs1 = 0.0; fs2 = 0.0;
 
-    E = 2.1e8; nu = 0.005; nus = 0.3;
+    E = 0.1; nu = 0.005; nus = 0.05;
 }
 else if(case == 2)
 {
@@ -98,22 +98,22 @@ else if(case == 2)
 
     fs1 = 0.0; fs2 = 0.0;
 
-    E = 2.1e8; nu = 0.05; nus = 0.3;
 }
 else if(case == 3)
 {
     ff1 = 0.0; ff2 = 0.0;
-    vin1 = 1.0; vin2 = 0.0;
+    vin1 = 4 * y * (1.0 - y); vin2 = 0.0;
     vout1 = 0.0; vout2 = 0.0;
 
     fs1 = 0.0; fs2 = 0.0;
+
+    E = 15.0; nu = 0.01; nus = 0.35;
 }
 /*--------------------------------------------------------------------------------------------*
 
 /* Variables */
 real mu = E/(2 * (1 + nus));
 real lambda = E * nus/((1 + nus) * (1 - 2 * nus));
-mu = 0.0476; lambda = 0.00529;
 real l = l0;
 real b = b0;
 real J0, vol0, convol;
@@ -199,11 +199,11 @@ macro solveadjoint()
 
 /*----------------------------------------- Main block -----------------------------------------*/
 /* Initial values */
-solvestate;
-plot(Fh, Sh, [v1, v2], [u1, u2]);                                                               
-J0 = J;
 vol0 = vol(Sh);
 convol = (vol(Sh) + vol(Fh)) * vf;
+solvestate;
+plot(Fh, Sh, [v1, v2], [u1, u2]);
+J0 = J;
 fout << J0 << " " <<  L << " " << vol(Sh) - convol << " " << l0 << endl;
 fout.flush;
 

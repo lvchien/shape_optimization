@@ -23,15 +23,15 @@ system("mkdir " + "meshes/FSI");
 if(case == 1)
 {
     border FW1(t = 0.0, 0.3){x = t; y = 0.0; label = FWALL;}
-    border F1(t = 0.0, 0.3){x = 0.3; y = t; label = FREE;}
-    border F2(t = 0.3, 0.7){x = t; y = 0.3; label = FREE;}
-    border F3(t = 0.3, 0.0){x = 0.7; y = t; label = FREE;}
+    border F1(t = 0.0, 1.0){x = 0.3 + 0.18 * t; y = 0.3 * t; label = FREE;}
+    border F2(t = 0.48, 0.52){x = t; y = 0.3; label = FREE;}
+    border F3(t = 1.0, 0.0){x = 0.7 - 0.18 * t; y = 0.3 * t; label = FREE;}
     border FW2(t = 0.7, 2.0){x = t; y = 0.0; label = FWALL;}
     border OUT(t = 0.0, 0.5){x = 2.0; y = t; label = FOUT;}
     border FW3(t = 2.0, 0.0){x = t; y = 0.5; label = FWALL;}
     border IN(t = 0.5, 0.0){x = 0.0; y = t; label = FIN;}
     border SW(t = 0.3, 0.7){x = t; y = 0.0; label = SWALL;}
-    border F4(t = 0, 2 * pi){x = 0.4 + 0.05 * cos(t); y = 0.1 + 0.05 * sin(t); label = FREE;}
+    border F4(t = 0, 2 * pi){x = 0.43 + 0.04 * cos(t); y = 0.1 + 0.04 * sin(t); label = FREE;}
     border D1(t = 0, 0.01){x = 0.3; y = t; label = DUMMY;}
     border D2(t = 0.3, 0.48){x = t; y = 0.01; label = DUMMY;}
     border D3(t = 0.01, 0.3){x = 0.48; y = t; label = DUMMY;}
@@ -40,8 +40,8 @@ if(case == 1)
     border D6(t = 0.52, 0.7){x = t; y = 0.01; label = DUMMY;}
     border D7(t = 0.01, 0){x = 0.7; y = t; label = DUMMY;}
 
-    Fh = buildmesh(FW1(6 * nps) + F1(18 * nps) + F2(24 * nps) + F3(18 * nps) + FW2(26 * nps) + OUT(10 * nps) + FW3(40 * nps) + IN(10 * nps) + F4(20 * nps));
-    Sh = buildmesh(SW(24 * nps) + F1(-18 * nps) + F2(-24 * nps) + F3(-18 * nps) + F4(-20 * nps));
+    Fh = buildmesh(FW1(6 * nps) + F1(30 * nps) + F2(4 * nps) + F3(30 * nps) + FW2(26 * nps) + OUT(10 * nps) + FW3(40 * nps) + IN(10 * nps) + F4(20 * nps));
+    Sh = buildmesh(SW(40 * nps) + F1(-30 * nps) + F2(-4 * nps) + F3(-30 * nps) + F4(-20 * nps));
     Th = buildmesh(FW1(30 * nps) + D1(1 * nps) + D2(18 * nps) + D3(29 * nps) + D4(4 * nps) + D5(29 * nps) + D6(18 * nps) + D7(1 * nps) 
         + FW2(130 * nps) + OUT(50 * nps) + FW3(200 * nps) + IN(50 * nps));
 }
@@ -67,67 +67,30 @@ else if(case == 2)
 else if(case == 3)
 {
     border FW1(t = 0.0, 2.0){x = t; y = 0.0; label = FWALL;}
-    border FW2(t = 2.9, 4.0){x = t; y = 0.0; label = FWALL;}
-    border OUT(t = 0.0, 0.8){x = 4.0; y = t; label = FOUT;}
-    border FW3(t = 4.0, 0.0){x = t; y = 0.8; label = FWALL;}
-    border IN(t = 0.8, 0.0){x = 0.0; y = t; label = FIN;}
-    border SW(t = 2.0, 2.9){x = t; y = 0.0; label = SWALL;}
-    border F1(t = 0.0, 0.7){x = 2.9; y = t; label = FREE;}
-    border F2(t = 2.9, 2.0){x = t; y = 0.7; label = FREE;}
-    border F3(t = 0.7, 0.0){x = 2.0; y = t; label = FREE;}
-    border F4(t = 0, 2 * pi){x = 2.5 + 0.1 * cos(t); y = 0.35 + 0.1 * sin(t); label = FREE;}
+    border OUT(t = 0.0, 1.0){x = 2.0; y = t; label = FOUT;}
+    border FW2(t = 2.0, 0.0){x = t; y = 1.0; label = FWALL;}
+    border IN(t = 1.0, 0.0){x = 0.0; y = t; label = FIN;}
+    border SW1(t = 0.95, 1.05){x = t; y = 0.45; label = SWALL;}
+    border SW2(t = 0.45, 0.55){x = 1.05; y = t; label = SWALL;}
+    border SW3(t = 1.05, 0.95){x = t; y = 0.55; label = SWALL;}
+    border SW4(t = 0.55, 0.45){x = 0.95; y = t; label = SWALL;}
+    border F(t = 0, 2 * pi){x = 1.0 + 0.1 * cos(t); y = 0.5 + 0.2 * sin(t); label = FREE;}
 
-    Fh = buildmesh(FW1(20 * nps) + F3(-7 * nps) + F2(-9 * nps) + F1(-7 * nps) + FW2(11 * nps) + OUT(8 * nps) + FW3(40 * nps) + IN(8 * nps) + F4(10 * nps));
-    Sh = buildmesh(SW(9 * nps) + F1(7 * nps) + F2(9 * nps) + F3(7 * nps) + F4(-10 * nps));
+    Fh = buildmesh(FW1(20 * nps) + OUT(10 * nps) + FW2(20 * nps) + IN(10 * nps) + F(-20 * nps) + SW1(2 * nps) + SW2(2 * nps) + SW3(2 * nps) + SW4(2 * nps));
+    Sh = buildmesh(F(20 * nps) + SW1(-2 * nps) + SW2(-2 * nps) + SW3(-2 * nps) + SW4(-2 * nps));
+    Th = buildmesh(FW1(40 * nps) + OUT(20 * nps) + FW2(40 * nps) + IN(20 * nps) + SW1(-4 * nps) + SW2(-4 * nps) + SW3(-4 * nps) + SW4(-4 * nps));
 }
-if(case == 4)
+else if(case == 4)
 {
-    border FW1(t = 0.0, 0.3){x = t; y = 0.0; label = FWALL;}
-    border F1(t = 0, 0.01){x = 0.3; y = t; label = DUMMY;}
-    border F2(t = pi, pi/2){x = 0.48 + 0.18 * cos(t); y = 0.01 + 0.29 * sin(t); label = FREE;}
-    border F3(t = 0.48, 0.52){x = t; y = 0.3; label = DUMMY;}
-    border F4(t = pi/2, 0.0){x = 0.52 + 0.18 * cos(t); y = 0.01 + 0.29 * sin(t); label = FREE;}
-    border F5(t = 0.01, 0.0){x = 0.7; y = t; label = DUMMY;}
-    border FW2(t = 0.7, 2.0){x = t; y = 0.0; label = FWALL;}
-    border OUT(t = 0.0, 0.5){x = 2.0; y = t; label = FOUT;}
-    border FW3(t = 2.0, 0.0){x = t; y = 0.5; label = FWALL;}
-    border IN(t = 0.5, 0.0){x = 0.0; y = t; label = FIN;}
-    border SW(t = 0.3, 0.7){x = t; y = 0.0; label = SWALL;}
-    border F6(t = 0, 2 * pi){x = 0.4 + 0.05 * cos(t); y = 0.1 + 0.05 * sin(t); label = FREE;}
-    border D1(t = 0.3, 0.48){x = t; y = 0.01; label = DUMMY;}
-    border D2(t = 0.01, 0.3){x = 0.48; y = t; label = DUMMY;}
-    border D3(t = 0.3, 0.01){x = 0.52; y = t; label = DUMMY;}
-    border D4(t = 0.52, 0.7){x = t; y = 0.01; label = DUMMY;}
+    border FW1(t = 0.0, 2.0){x = t; y = 0.0; label = FWALL;}
+    border OUT(t = 0.0, 1.0){x = 2.0; y = t; label = FOUT;}
+    border FW2(t = 2.0, 0.0){x = t; y = 1.0; label = FWALL;}
+    border IN(t = 1.0, 0.0){x = 0.0; y = t; label = FIN;}
+    border F(t = 0, 2 * pi){x = 1.0 + 0.1 * cos(t); y = 0.5 + 0.2 * sin(t); label = FREE;}
 
-    Fh = buildmesh(FW1(15 * nps) + F1(1 * nps) + F2(25 * nps) + F3(4 * nps) + F4(25 * nps) + F5(1 * nps) + FW2(65 * nps) + OUT(25 * nps) + FW3(100 * nps) + IN(25 * nps) + F6(25 * nps));
-    Sh = buildmesh(SW(20 * nps) + F1(-1 * nps) + F2(-25 * nps) + F3(-4 * nps) + F4(-25 * nps) + F5(-1 * nps) + F6(-25 * nps));
-    Th = buildmesh(FW1(30 * nps) + F1(1 * nps) + D1(18 * nps) + D2(29 * nps) + F3(4 * nps) + D3(29 * nps) + D4(18 * nps) + F5(1 * nps) 
-                    + FW2(130 * nps) + OUT(50 * nps) + FW3(200 * nps) + IN(50 * nps));
-}
-if(case == 5)
-{
-    border FW1(t = 0.0, 0.3){x = t; y = 0.0; label = FWALL;}
-    border F1(t = 0.0, 1.0){x = 0.3 + 0.18 * t; y = 0.3 * t; label = FREE;}
-    border F2(t = 0.48, 0.52){x = t; y = 0.3; label = FREE;}
-    border F3(t = 1.0, 0.0){x = 0.7 - 0.18 * t; y = 0.3 * t; label = FREE;}
-    border FW2(t = 0.7, 2.0){x = t; y = 0.0; label = FWALL;}
-    border OUT(t = 0.0, 0.5){x = 2.0; y = t; label = FOUT;}
-    border FW3(t = 2.0, 0.0){x = t; y = 0.5; label = FWALL;}
-    border IN(t = 0.5, 0.0){x = 0.0; y = t; label = FIN;}
-    border SW(t = 0.3, 0.7){x = t; y = 0.0; label = SWALL;}
-    border F4(t = 0, 2 * pi){x = 0.43 + 0.04 * cos(t); y = 0.1 + 0.04 * sin(t); label = FREE;}
-    border D1(t = 0, 0.01){x = 0.3; y = t; label = DUMMY;}
-    border D2(t = 0.3, 0.48){x = t; y = 0.01; label = DUMMY;}
-    border D3(t = 0.01, 0.3){x = 0.48; y = t; label = DUMMY;}
-    border D4(t = 0.48, 0.52){x = t; y = 0.3; label = DUMMY;}
-    border D5(t = 0.3, 0.01){x = 0.52; y = t; label = DUMMY;}
-    border D6(t = 0.52, 0.7){x = t; y = 0.01; label = DUMMY;}
-    border D7(t = 0.01, 0){x = 0.7; y = t; label = DUMMY;}
-
-    Fh = buildmesh(FW1(6 * nps) + F1(30 * nps) + F2(4 * nps) + F3(30 * nps) + FW2(26 * nps) + OUT(10 * nps) + FW3(40 * nps) + IN(10 * nps) + F4(20 * nps));
-    Sh = buildmesh(SW(40 * nps) + F1(-30 * nps) + F2(-4 * nps) + F3(-30 * nps) + F4(-20 * nps));
-    Th = buildmesh(FW1(30 * nps) + D1(1 * nps) + D2(18 * nps) + D3(29 * nps) + D4(4 * nps) + D5(29 * nps) + D6(18 * nps) + D7(1 * nps) 
-        + FW2(130 * nps) + OUT(50 * nps) + FW3(200 * nps) + IN(50 * nps));
+    Fh = buildmesh(FW1(20 * nps) + OUT(10 * nps) + FW2(20 * nps) + IN(10 * nps) + F(-15 * nps));
+    Sh = buildmesh(F(15 * nps));
+    Th = buildmesh(FW1(40 * nps) + OUT(20 * nps) + FW2(40 * nps) + IN(20 * nps));
 }
 
 savemesh(Fh, "meshes/FSI/" + fmsh + ".mesh");
