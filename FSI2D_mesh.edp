@@ -92,6 +92,21 @@ else if(case == 4)
     Sh = buildmesh(F(15 * nps));
     Th = buildmesh(FW1(40 * nps) + OUT(20 * nps) + FW2(40 * nps) + IN(20 * nps));
 }
+else if(case == 5)
+{
+    border FW1(t = 0.0, 2.0){x = t; y = 0.0; label = FWALL;}
+    border OUT(t = 0.0, 1.0){x = 2.0; y = t; label = FOUT;}
+    border FW2(t = 2.0, 0.0){x = t; y = 1.0; label = FWALL;}
+    border IN(t = 1.0, 0.0){x = 0.0; y = t; label = FIN;}
+    border F1(t = 0.88, 1.12){x = t; y = 0.38; label = FREE;}
+    border F2(t = 0.38, 0.62){x = 1.12; y = t; label = FREE;}
+    border F3(t = 1.12, 0.88){x = t; y = 0.62; label = FREE;}
+    border F4(t = 0.62, 0.38){x = 0.88; y = t; label = FREE;}
+
+    Fh = buildmesh(FW1(20 * nps) + OUT(10 * nps) + FW2(20 * nps) + IN(10 * nps) + F1(-6 * nps) + F2(-6 * nps) + F3(-6 * nps) + F4(-6 * nps));
+    Sh = buildmesh(F1(6 * nps) + F2(6 * nps) + F3(6 * nps) + F4(6 * nps));
+    Th = buildmesh(FW1(40 * nps) + OUT(20 * nps) + FW2(40 * nps) + IN(20 * nps));
+}
 
 savemesh(Fh, "meshes/FSI/" + fmsh + ".mesh");
 savemesh(Sh, "meshes/FSI/" + smsh + ".mesh");
