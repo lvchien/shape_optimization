@@ -206,7 +206,6 @@ plot(Fh, Sh, [v1, v2], [u1, u2]);
 wc = w / compliance;
 we = (1 - w)/ dissipatedenergy;
 J0 = J;
-
 fout << J0 << " " <<  L << " " << vol(Sh) - convol << " " << l0 << endl;
 fout.flush;
 
