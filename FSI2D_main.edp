@@ -22,7 +22,7 @@ real nu = getARGV("--nu", 0.05);                                            // T
 real E = getARGV("--E", 21.0);                                              // The Young modulus of solid
 real nus = getARGV("--nus", 0.3);                                           // The Poisson ratio of solid
 real vf = getARGV("--vf", 1.) ;                                             // Volume fraction
-real w = getARGV("--w", 1.0);                                               // Weight parameter of the objective function                                                                   
+real w = getARGV("--w", 1.0);                                               // Weight parameter of the objective functions
 /*----------------------------------------------------------------------------------------------*/
 
 /*---------------------------------- Numerical configurations ----------------------------------*/                                                                
@@ -116,15 +116,15 @@ real mu = E/(2 * (1 + nus));
 real lambda = E * nus/((1 + nus) * (1 - 2 * nus));
 real l = l0;
 real b = b0;
-real J0, vol0, convol;
+real J0, vol0, convol, wc, we;
 
 
 /*-------------------------- Declare functions and their derivatives --------------------------*/
 macro compliance() (int2d(Sh)(2.0 * mu * dot(eps2(u1, u2), eps2(u1, u2)) + lambda * div2(u1, u2) * div2(u1, u2))) //EOM
 macro dissipatedenergy() (int2d(Fh)(2.0 * nu * dot(eps2(v1, v2), eps2(v1, v2)))) //EOM
-macro J() (w * compliance + (1.0 - w) * dissipatedenergy) //EOM
-macro dJ() (w * (2.0 * mu * dot(eps2(u1, u2), eps2(u1, u2)) + lambda * div2(u1, u2) * div2(u1, u2))
-            + 2.0 * (1 - w) * nu * dot(eps2(v1, v2), eps2(v1, v2))
+macro J() (wc * compliance + we * dissipatedenergy) //EOM
+macro dJ() (wc * (2.0 * mu * dot(eps2(u1, u2), eps2(u1, u2)) + lambda * div2(u1, u2) * div2(u1, u2))
+            + 2.0 * we * nu * dot(eps2(v1, v2), eps2(v1, v2))
             - (fs1 * ua1 + fs2 * ua2) + (ff1 * va1 + ff2 * va2)
             + 2.0 * mu * dot(eps2(u1, u2), eps2(ua1, ua2)) + lambda * div2(u1, u2) * div2(ua1, ua2)
             - 2.0 * nu * dot(eps2(v1, v2), eps2(ua1, ua2)) + p * div2(ua1, ua2)
@@ -156,12 +156,12 @@ problem elastic2D([u1, u2], [ut1, ut2]) =
 
 problem adjointelastic2D([ua1, ua2], [ut1, ut2]) = 
     int2d(Sh)(2.0 * mu * dot(eps2(ua1, ua2), eps2(ut1, ut2)) + lambda * div2(ua1, ua2) * div2(ut1, ut2))
-        + int2d(Sh)(2 * w * (2.0 * mu * dot(eps2(u1, u2), eps2(ut1, ut2)) + lambda * div2(u1, u2) * div2(ut1, ut2)))
+        + int2d(Sh)(2 * wc * (2.0 * mu * dot(eps2(u1, u2), eps2(ut1, ut2)) + lambda * div2(u1, u2) * div2(ut1, ut2)))
         + on(SWALL, ua1 = 0.0, ua2 = 0.0);
 
 problem adjointstokes2D([va1, va2, pa], [vt1, vt2, pt]) = 
     int2d(Fh)(2.0 * nu * dot(eps2(va1, va2), eps2(vt1, vt2)) - pa * div2(vt1, vt2) - pt * div2(va1, va2))
-        + int2d(Fh)(4.0 * (1 - w) * nu * dot(eps2(v1, v2), eps2(vt1, vt2)))
+        + int2d(Fh)(4.0 * we * nu * dot(eps2(v1, v2), eps2(vt1, vt2)))
         - int2d(Fh)(pa * pt * epsilon)
         + on(FWALL, SWALL, FIN, va1 = 0.0, va2 = 0.0)
         + on(FREE, va1 = ua1, va2 = ua2);
@@ -203,7 +203,10 @@ vol0 = vol(Sh);
 convol = (vol(Sh) + vol(Fh)) * vf;
 solvestate;
 plot(Fh, Sh, [v1, v2], [u1, u2]);
+wc = w / compliance;
+we = (1 - w)/ dissipatedenergy;
 J0 = J;
+
 fout << J0 << " " <<  L << " " << vol(Sh) - convol << " " << l0 << endl;
 fout.flush;
 
