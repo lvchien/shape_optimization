@@ -107,15 +107,15 @@ if(case == 4)
 if(case == 5)
 {
     border FW1(t = 0.0, 0.3){x = t; y = 0.0; label = FWALL;}
-    border F1(t = 0.0, 0.1){x = 0.3 + t; y = 3 * t; label = FREE;}
-    border F2(t = 0.4, 0.6){x = t; y = 0.3; label = FREE;}
-    border F3(t = 0.1, 0.0){x = 0.7 - t; y = 3 * t; label = FREE;}
+    border F1(t = 0.0, 1.0){x = 0.3 + 0.18 * t; y = 0.3 * t; label = FREE;}
+    border F2(t = 0.48, 0.52){x = t; y = 0.3; label = FREE;}
+    border F3(t = 1.0, 0.0){x = 0.7 - 0.18 * t; y = 0.3 * t; label = FREE;}
     border FW2(t = 0.7, 2.0){x = t; y = 0.0; label = FWALL;}
     border OUT(t = 0.0, 0.5){x = 2.0; y = t; label = FOUT;}
     border FW3(t = 2.0, 0.0){x = t; y = 0.5; label = FWALL;}
     border IN(t = 0.5, 0.0){x = 0.0; y = t; label = FIN;}
     border SW(t = 0.3, 0.7){x = t; y = 0.0; label = SWALL;}
-    border F4(t = 0, 2 * pi){x = 0.4 + 0.05 * cos(t); y = 0.1 + 0.05 * sin(t); label = FREE;}
+    border F4(t = 0, 2 * pi){x = 0.43 + 0.04 * cos(t); y = 0.1 + 0.04 * sin(t); label = FREE;}
     border D1(t = 0, 0.01){x = 0.3; y = t; label = DUMMY;}
     border D2(t = 0.3, 0.48){x = t; y = 0.01; label = DUMMY;}
     border D3(t = 0.01, 0.3){x = 0.48; y = t; label = DUMMY;}
@@ -124,8 +124,8 @@ if(case == 5)
     border D6(t = 0.52, 0.7){x = t; y = 0.01; label = DUMMY;}
     border D7(t = 0.01, 0){x = 0.7; y = t; label = DUMMY;}
 
-    Fh = buildmesh(FW1(6 * nps) + F1(18 * nps) + F2(12 * nps) + F3(18 * nps) + FW2(26 * nps) + OUT(10 * nps) + FW3(40 * nps) + IN(10 * nps) + F4(20 * nps));
-    Sh = buildmesh(SW(24 * nps) + F1(-18 * nps) + F2(-12 * nps) + F3(-18 * nps) + F4(-20 * nps));
+    Fh = buildmesh(FW1(6 * nps) + F1(30 * nps) + F2(4 * nps) + F3(30 * nps) + FW2(26 * nps) + OUT(10 * nps) + FW3(40 * nps) + IN(10 * nps) + F4(20 * nps));
+    Sh = buildmesh(SW(40 * nps) + F1(-30 * nps) + F2(-4 * nps) + F3(-30 * nps) + F4(-20 * nps));
     Th = buildmesh(FW1(30 * nps) + D1(1 * nps) + D2(18 * nps) + D3(29 * nps) + D4(4 * nps) + D5(29 * nps) + D6(18 * nps) + D7(1 * nps) 
         + FW2(130 * nps) + OUT(50 * nps) + FW3(200 * nps) + IN(50 * nps));
 }

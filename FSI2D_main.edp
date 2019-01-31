@@ -88,7 +88,7 @@ if(case == 1)
 
     fs1 = 0.0; fs2 = 0.0;
 
-    E = 3.039; nu = 1.002e-3; nus = 0.3;
+    E = 2.1e8; nu = 0.005; nus = 0.3;
 }
 else if(case == 2)
 {
@@ -113,6 +113,7 @@ else if(case == 3)
 /* Variables */
 real mu = E/(2 * (1 + nus));
 real lambda = E * nus/((1 + nus) * (1 - 2 * nus));
+mu = 0.0476; lambda = 0.00529;
 real l = l0;
 real b = b0;
 real J0, vol0, convol;
@@ -203,7 +204,8 @@ plot(Fh, Sh, [v1, v2], [u1, u2]);
 J0 = J;
 vol0 = vol(Sh);
 convol = (vol(Sh) + vol(Fh)) * vf;
-fout << J0 << " " <<  L << " " << vol(Sh) << " " << l0 << endl;
+fout << J0 << " " <<  L << " " << vol(Sh) - convol << " " << l0 << endl;
+fout.flush;
 
 int i = 0;
 int imax = 1000;
@@ -227,7 +229,7 @@ while(i < imax && sgn > minsgn)
     real sminarea = checkmovemesh(Sh, [x + tau * d1, y + tau * d2]);
 
     int j = 0;
-    int jmax = 30;
+    int jmax = 40;
 
     while(j < jmax && !(fminarea >= minarea && sminarea >= minarea))
     {
@@ -251,7 +253,7 @@ while(i < imax && sgn > minsgn)
         real afterL = L;
 
         int k = 0;
-        int kmax = 30;
+        int kmax = 40;
 
         while(k < kmax && !(afterL < beforeL + sm * tau * dd))
         {
@@ -270,7 +272,7 @@ while(i < imax && sgn > minsgn)
 
         if(k < kmax)
         {
-            l = l - b * (vol(Sh) - convol);
+            l = l - b * (vol(Sh) - convol)/vol0;
             b = (b < bmax) ? b * alpha : bmax;
         }
         else
@@ -286,7 +288,7 @@ while(i < imax && sgn > minsgn)
     }
 
     /* Save post-processing data */
-    fout << J << " " <<  L << " " << vol(Sh) << " " << l << endl;
+    fout << J << " " <<  L << " " << vol(Sh) - convol << " " << l << endl;
     fout.flush;
     if(i % steps == 0)
     {

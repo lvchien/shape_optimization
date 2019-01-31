@@ -1,4 +1,4 @@
-path = "home/Programming/Freefempp/shape_optimization/results/first/"
+path = "~/Programming/Freefempp/shape_optimization/results/first/"
 
 set terminal pdfcairo size 20cm, 15cm
   set output path."conve.pdf"
