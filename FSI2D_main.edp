@@ -55,7 +55,6 @@ ofstream fout(folder + "/out.dat");
 ofstream cmd(folder + "/command.sh");
 for (int i = 0; i < ARGV.n; i++)
     cmd << ARGV[i] << " ";
-cmd << endl;
 cmd.flush;
 
 /* Load mesh */
@@ -74,8 +73,8 @@ fespace Dh(Th, P1);
 
 /* Declare FE variables */
 FVh v1, v2, va1, va2, vt1, vt2, ff1, ff2, vin1, vin2, vw1, vw2, vout1, vout2;
-FPh p, pa, pt, psi, psit, df1, df2;
-SUh u1, u2, ua1, ua2, ut1, ut2, fs1, fs2, uload1, uload2, ds1, ds2;
+FPh p, pa, pt, psi, psit;
+SUh u1, u2, ua1, ua2, ut1, ut2, fs1, fs2, uload1, uload2;
 Dh d1, d2, dt1, dt2;
 
 
@@ -94,18 +93,22 @@ else if(case == 2)
 {
     ff1 = 0.0; ff2 = 0.0;
     vin1 = 1.0; vin2 = 0.0;
+    vw1 = 0.0; vw2 = 0.0;
     vout1 = 0.0; vout2 = 0.0;
 
     fs1 = 0.0; fs2 = 0.0;
+    uload1 = 0.0; uload2 = 0.0;
 
 }
 else if(case == 3)
 {
     ff1 = 0.0; ff2 = 0.0;
-    vin1 = 4 * y * (1.0 - y); vin2 = 0.0;
+    vin1 = 4.0 * y * (1.0 - y); vin2 = 0.0;
+    vw1 = 0.0; vw2 = 0.0;
     vout1 = 0.0; vout2 = 0.0;
 
     fs1 = 0.0; fs2 = 0.0;
+    uload1 = 0.0; uload2 = 0.0;
 
     E = 15.0; nu = 0.01; nus = 0.35;
 }
@@ -206,102 +209,104 @@ plot(Fh, Sh, [v1, v2], [u1, u2]);
 wc = w / compliance;
 we = (1 - w)/ dissipatedenergy;
 J0 = J;
-fout << J0 << " " <<  L << " " << vol(Sh) - convol << " " << l0 << endl;
+fout << compliance << " " <<  L << " " << vol(Sh) - convol << " " << l0 << endl;
 fout.flush;
 
-int i = 0;
 int imax = 1000;
-real sgn = minsgn + epsilon;
-
-while(i < imax && sgn > minsgn)
+for(int i = 0; i < imax; i++)
 {
-    i++;
     solveadjoint;
     solveregex;
-    sgn = sqrt(int1d(Sh, FREE)(d1^2 + d2^2));
     real dd = int1d(Sh, FREE)(dL * dot([d1, d2], N2));
     cout << "Directional derivative: " << dd << endl;
-    
-    Fh = adaptmesh(Fh, hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
-    Sh = adaptmesh(Sh, hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
-    plot(Th, [d1, d2], cmm = "Iteration i = " + i + "/" + imax);
 
-    real tau = tau0;
-    real fminarea = checkmovemesh(Fh, [x + tau * d1, y + tau * d2]);
-    real sminarea = checkmovemesh(Sh, [x + tau * d1, y + tau * d2]);
-
-    int j = 0;
-    int jmax = 40;
-
-    while(j < jmax && !(fminarea >= minarea && sminarea >= minarea))
+    real sgn = sqrt(int1d(Sh, FREE)(d1^2 + d2^2));
+    if(sgn > minsgn)
     {
-        j++;
-        cout << "Iteration j = " << j << "/" << jmax << ": Step length = " << tau << endl;
-        tau *= beta;
-        fminarea = checkmovemesh(Fh, [x + tau * d1, y + tau * d2]);
-        sminarea = checkmovemesh(Sh, [x + tau * d1, y + tau * d2]);
-    }
+        Fh = adaptmesh(Fh, hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
+        Sh = adaptmesh(Sh, hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
+        plot(Th, [d1, d2], cmm = "Iteration i = " + i + "/" + imax);
 
-    if(j < jmax)
-    {
-        mesh tmpFh = Fh;
-        mesh tmpSh = Sh;
-        real beforeL = L;
-        
-        Fh = movemesh(Fh, [x + tau * d1, y + tau * d2]);
-        Sh = movemesh(Sh, [x + tau * d1, y + tau * d2]);
-        solvestate;
-        plot(Fh, Sh, [v1, v2], [u1, u2]); 
-        real afterL = L;
+        real tau = tau0;
+        real fminarea = checkmovemesh(Fh, [x + tau * d1, y + tau * d2]);
+        real sminarea = checkmovemesh(Sh, [x + tau * d1, y + tau * d2]);
 
-        int k = 0;
-        int kmax = 40;
+        int j = 0;
+        int jmax = 40;
 
-        while(k < kmax && !(afterL < beforeL + sm * tau * dd))
+        while(j < jmax && !(fminarea >= minarea && sminarea >= minarea))
         {
-            k++;
-            cout << "Iteration k = " << k << "/" << kmax << ": Step length = " << tau << endl;
+            j++;
+            cout << "Iteration j = " << j << "/" << jmax << ": Step length = " << tau << endl;
             tau *= beta;
-            Fh = tmpFh;
-            Sh = tmpSh;
-
-            Fh = movemesh(Fh, [x + tau * d1, y + tau * d2]);
-            Sh = movemesh(Sh, [x + tau * d1, y + tau * d2]);
-            plot(Fh, Sh);
-            solvestate;
-            afterL = L;
+            fminarea = checkmovemesh(Fh, [x + tau * d1, y + tau * d2]);
+            sminarea = checkmovemesh(Sh, [x + tau * d1, y + tau * d2]);
         }
 
-        if(k < kmax)
+        if(j < jmax)
         {
-            l = l - b * (vol(Sh) - convol)/vol0;
-            b = (b < bmax) ? b * alpha : bmax;
+            mesh tmpFh = Fh;
+            mesh tmpSh = Sh;
+            real beforeL = L;
+            
+            Fh = movemesh(Fh, [x + tau * d1, y + tau * d2]);
+            Sh = movemesh(Sh, [x + tau * d1, y + tau * d2]);
+            solvestate;
+            plot(Fh, Sh, [v1, v2], [u1, u2]); 
+            real afterL = L;
+
+            int k = 0;
+            int kmax = 40;
+
+            while(k < kmax && !(afterL < beforeL + sm * tau * dd))
+            {
+                k++;
+                cout << "Iteration k = " << k << "/" << kmax << ": Step length = " << tau << endl;
+                tau *= beta;
+                Fh = tmpFh;
+                Sh = tmpSh;
+
+                Fh = movemesh(Fh, [x + tau * d1, y + tau * d2]);
+                Sh = movemesh(Sh, [x + tau * d1, y + tau * d2]);
+                plot(Fh, Sh);
+                solvestate;
+                afterL = L;
+            }
+
+            if(k < kmax)
+            {
+                l = l - b * (vol(Sh) - convol)/vol0;
+                b = (b < bmax) ? b * alpha : bmax;
+            }
+            else
+            {
+                cout << "The shape has not been changed significant!" << endl;
+                break;
+            }
         }
         else
         {
-            cout << "The shape has not been changed significant!" << endl;
+            cout << "The descent direction is invalid!" << endl;
             break;
+        }
+
+        /* Save post-processing data */
+        fout << compliance << " " <<  L << " " << vol(Sh) - convol << " " << l << endl;
+        fout.flush;
+        if(i % steps == 0)
+        {
+            savesol(folder + "/fmesh." + i/steps + ".sol", Fh, [v1, v2]);
+            savesol(folder + "/smesh." + i/steps + ".sol", Sh, [u1, u2]);
+            savemesh(Fh, folder + "/fmesh." + i/steps + ".mesh");
+            savemesh(Sh, folder + "/smesh." + i/steps + ".mesh");
         }
     }
     else
     {
-        cout << "The descent direction is invalid!" << endl;
+        cout << "The shape has not been changed significant!" << endl;
         break;
     }
-
-    /* Save post-processing data */
-    fout << J << " " <<  L << " " << vol(Sh) - convol << " " << l << endl;
-    fout.flush;
-    if(i % steps == 0)
-    {
-        savesol(folder + "/fmesh." + i/steps + ".sol", Fh, [v1, v2]);
-        savesol(folder + "/smesh." + i/steps + ".sol", Sh, [u1, u2]);
-        savemesh(Fh, folder + "/fmesh." + i/steps + ".mesh");
-        savemesh(Sh, folder + "/smesh." + i/steps + ".mesh");
-    }
 }
-if(sgn < minsgn)
-    cout << "The shape has not been changed significant!" << endl;
 
 /*----------------------------------------------------------------------------------------------*/
 
@@ -310,4 +315,4 @@ savesol(folder + "/fmesh_final.sol", Fh, [v1, v2]);
 savesol(folder + "/smesh_final.sol", Sh, [u1, u2]);
 savemesh(Fh, folder + "/fmesh_final.mesh");
 savemesh(Sh, folder + "/smesh_final.mesh");
-plot(Fh, Sh);
+// plot(Fh, Sh);

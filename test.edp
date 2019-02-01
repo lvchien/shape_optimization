@@ -1,40 +1,43 @@
 include "operators.edp"
+load "medit";
 
-int DIR = 1;
-int FREE = 2;
-int nn = 10;
-real nu = 0.05;
-real epsilon = 1e-8;
+int IN = 1;
+int OUT = 2;
+int WALL = 3;
+int nps = 10;
 
-border L11(t = 0.0, 1.0){x = t; y = 0.0; label = FREE;}
-border L12(t = 0.0, 1.0){x = 1.0; y = t; label = FREE;}
-border L13(t = 1.0, 0.0){x = t; y = 1.0; label = DIR;}
-border L4(t = 1.0, 0.0){x = 0.0; y = t; label = FREE;}
+border L1(t = 0.0, 2.0){x = t; y = 0.0; label = WALL;}
+border L2(t = 0.0, 1.0){x = 2.0; y = t; label = OUT;}
+border L3(t = 2.0, 0.0){x = t; y = 1.0; label = WALL;}
+border L4(t = 1.0, 0.0){x = 0.0; y = t; label = IN;}
 
-border L21(t = 0.0, 0.8){x = t; y = 0.0; label = FREE;}
-border L22(t = 0.0, 1.0){x = 0.8; y = t; label = FREE;}
-border L23(t = 0.8, 0.0){x = t; y = 1.0; label = DIR;}
+mesh Th = buildmesh(L1(20 * nps) + L2(10 * nps) + L3(20 * nps) + L4(10 * nps));
+plot(Th);
 
-mesh Th1 = buildmesh(L11(5 * nn) + L12(5 * nn) + L13(5 * nn) + L4(5 * nn));
-// mesh Th2 = buildmesh(L21(4 * nn) + L22(4 * nn) + L23(4 * nn) + L4(5 * nn));
-mesh Th2 = Th1 * (x < 0.8);
-plot(Th2);
+fespace Vh(Th, P2);
+fespace Ph(Th, P1);
 
-fespace Vh1(Th1, P2);
-fespace Ph1(Th1, P1);
+Vh u1, u2, v1, v2, up1, up2, psi, phi, sq;
+Ph p, q;
 
-fespace Vh2(Th2, P2);
-fespace Ph2(Th2, P1);
+real dt = 0.01;
+real alpha = 1./dt;
+u1 = ((x - 0.5)^2 + (y - 0.5)^2 < 0.01) * 100.0; u2 = 0.0;
+real xc = 0.5, yc = 0.5;
 
-Vh2 v1, v2, vt1, vt2;
-Ph2 p, pt;
 
-solve stokes2D([v1, v2, p], [vt1, vt2, pt]) = 
-    int2d(Th2)(2.0 * nu * dot(eps2(v1, v2), eps2(vt1, vt2)) - p * div2(vt1, vt2) - pt * div2(v1, v2))
-        - int2d(Th2)(p * pt * epsilon)
-        + on(DIR, v1 = 1.0, v2 = 0.0)
-        + on(FREE, v1 = 0.0, v2 = 0.0);
-
-Vh1 u1 = v1, u2 = v2;
-
-plot(Th1, [u1, u2]);
+for (int i = 0; i <= 100; i++)
+{
+    xc = xc + u1(xc, yc) * i * dt;
+    yc = yc + u2(xc, yc) * i * dt;
+    cout << "center: (" << xc << ", " << yc << ")" << endl;
+    func nu = ((x - xc)^2 + (y - yc)^2 > 0.01) * 1./100.;
+    up1 = u1;
+    up2 = u2;
+    solve NS (u1,u2,p,v1,v2,q,solver=Crout) =
+        int2d(Th)(alpha*( u1*v1 + u2*v2) + nu * ( dx(u1)*dx(v1) + dy(u1)*dy(v1) + dx(u2)*dx(v2) + dy(u2)*dy(v2) ) 
+                - p*q*(0.000001) - p*dx(v1) - p*dy(v2) - dx(u1)*q - dy(u2)*q)
+        + int2d(Th)(-alpha*convect([up1,up2],-dt,up1)*v1 -alpha*convect([up1,up2],-dt,up2)*v2);
+    sq = sqrt(u1^2 + u2^2);
+    plot(Th, sq);
+} ;
