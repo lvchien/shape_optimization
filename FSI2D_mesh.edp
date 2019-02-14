@@ -70,34 +70,6 @@ else if(case == 3)
     border OUT(t = 0.0, 1.0){x = 2.0; y = t; label = FOUT;}
     border FW2(t = 2.0, 0.0){x = t; y = 1.0; label = FWALL;}
     border IN(t = 1.0, 0.0){x = 0.0; y = t; label = FIN;}
-    border SW1(t = 0.95, 1.05){x = t; y = 0.45; label = SWALL;}
-    border SW2(t = 0.45, 0.55){x = 1.05; y = t; label = SWALL;}
-    border SW3(t = 1.05, 0.95){x = t; y = 0.55; label = SWALL;}
-    border SW4(t = 0.55, 0.45){x = 0.95; y = t; label = SWALL;}
-    border F(t = 0, 2 * pi){x = 1.0 + 0.1 * cos(t); y = 0.5 + 0.2 * sin(t); label = FREE;}
-
-    Fh = buildmesh(FW1(20 * nps) + OUT(10 * nps) + FW2(20 * nps) + IN(10 * nps) + F(-20 * nps) + SW1(2 * nps) + SW2(2 * nps) + SW3(2 * nps) + SW4(2 * nps));
-    Sh = buildmesh(F(20 * nps) + SW1(-2 * nps) + SW2(-2 * nps) + SW3(-2 * nps) + SW4(-2 * nps));
-    Th = buildmesh(FW1(40 * nps) + OUT(20 * nps) + FW2(40 * nps) + IN(20 * nps) + SW1(-4 * nps) + SW2(-4 * nps) + SW3(-4 * nps) + SW4(-4 * nps));
-}
-else if(case == 4)
-{
-    border FW1(t = 0.0, 2.0){x = t; y = 0.0; label = FWALL;}
-    border OUT(t = 0.0, 1.0){x = 2.0; y = t; label = FOUT;}
-    border FW2(t = 2.0, 0.0){x = t; y = 1.0; label = FWALL;}
-    border IN(t = 1.0, 0.0){x = 0.0; y = t; label = FIN;}
-    border F(t = 0, 2 * pi){x = 1.0 + 0.1 * cos(t); y = 0.5 + 0.2 * sin(t); label = FREE;}
-
-    Fh = buildmesh(FW1(20 * nps) + OUT(10 * nps) + FW2(20 * nps) + IN(10 * nps) + F(-15 * nps));
-    Sh = buildmesh(F(15 * nps));
-    Th = buildmesh(FW1(40 * nps) + OUT(20 * nps) + FW2(40 * nps) + IN(20 * nps));
-}
-else if(case == 5)
-{
-    border FW1(t = 0.0, 2.0){x = t; y = 0.0; label = FWALL;}
-    border OUT(t = 0.0, 1.0){x = 2.0; y = t; label = FOUT;}
-    border FW2(t = 2.0, 0.0){x = t; y = 1.0; label = FWALL;}
-    border IN(t = 1.0, 0.0){x = 0.0; y = t; label = FIN;}
     border F1(t = 0.88, 1.12){x = t; y = 0.38; label = FREE;}
     border F2(t = 0.38, 0.62){x = 1.12; y = t; label = FREE;}
     border F3(t = 1.12, 0.88){x = t; y = 0.62; label = FREE;}
