@@ -1,1 +1,0 @@
-FreeFem++ FSI2D_main.edp --case 3 --fmsh fluid3 --smsh solid3 --dmsh domain3 --folder results/third --vf 0.03 --tau0 1e-2 --w 1.0 --b0 100. --bmax 1e3 --l0 50.0 --sm 1e-8 --minsgn 1e-8 

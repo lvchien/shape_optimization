@@ -47,25 +47,6 @@ if(case == 1)
 }
 else if(case == 2)
 {
-    border FW1(t = 0.0, 2.0){x = t; y = 1.0; label = FWALL;}
-    border FW2(t = 1.0, 0.0){x = 2.0; y = t; label = FWALL;}
-    border FW3(t = 2.0, 7.0){x = t; y = 0.0; label = FWALL;}
-    border OUT(t = 0.0, 3.0){x = 7.0; y = t; label = FOUT;}
-    border FW4(t = 7.0, 2.0){x = t; y = 3.0; label = FWALL;}
-    border FW5(t = 3.0, 2.0){x = 2.0; y = t; label = FWALL;}
-    border FW6(t = 2.0, 0.0){x = t; y = 2.0; label = FWALL;}
-    border IN(t = 2.0, 1.0){x = 0.0; y = t; label = FIN;}
-    border SW1(t = 3.0, 3.5){x = t; y = 0.5; label = SWALL;}
-    border F1(t = 0.5, 2.5){x = 3.5; y = t; label = FREE;}
-    border SW2(t = 3.5, 3.0){x = t; y = 2.5; label = SWALL;}
-    border F2(t = 2.5, 0.5){x = 3.0; y = t; label = FREE;}
-
-    Fh = buildmesh(FW1(4 * nps) + FW2(2 * nps) + FW3(10 * nps) + OUT(6 * nps) + FW4(10 * nps) + FW5(2 * nps) + FW6(4 * nps) + IN(2 * nps) + SW1(-1 * nps) + F1(-4 * nps) + SW2(-1 * nps) + F2(-4 * nps));
-    Sh = buildmesh(SW1(1 * nps) + F1(4 * nps) + SW2(1 * nps) + F2(4 * nps));
-    Th = buildmesh(FW1(4 * nps) + FW2(2 * nps) + FW3(10 * nps) + OUT(6 * nps) + FW4(10 * nps) + FW5(2 * nps) + FW6(4 * nps) + IN(2 * nps));
-}
-else if(case == 3)
-{
     border FW1(t = 0.0, 2.0){x = t; y = 0.0; label = FWALL;}
     border OUT(t = 0.0, 1.0){x = 2.0; y = t; label = FOUT;}
     border FW2(t = 2.0, 0.0){x = t; y = 1.0; label = FWALL;}
