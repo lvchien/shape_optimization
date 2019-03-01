@@ -73,7 +73,7 @@ fespace Dh(Th, P1);
 
 /* Declare FE variables */
 FVh v1, v2, va1, va2, vt1, vt2, ff1, ff2, vin1, vin2, vw1, vw2, vout1, vout2;
-FPh p, pa, pt, psi, psit;
+FPh p, pa, pt;
 SUh u1, u2, ua1, ua2, ut1, ut2, fs1, fs2, uload1, uload2;
 Dh d1, d2, dt1, dt2;
 
@@ -168,13 +168,12 @@ problem adjointstokes2D([va1, va2, pa], [vt1, vt2, pt]) =
         + on(FWALL, SWALL, FIN, va1 = 0.0, va2 = 0.0)
         + on(FREE, va1 = ua1, va2 = ua2);
 
-problem solveregex1([d1, d2], [dt1, dt2]) = 
-  int2d(Th)(gm * dot(eps2(d1, d2), eps2(dt1, dt2)))
-       + int2d(Th)(dot([d1, d2], [dt1, dt2]))
+problem solveregex([d1, d2], [dt1, dt2]) = 
+  int2d(Th)(gm * dot(Jaco2(d1, d2), Jaco2(dt1, dt2)) + dot([d1, d2], [dt1, dt2]))
        + int1d(Sh, FREE)(dL * dot([dt1, dt2], N2))
        + on(SLOAD, SWALL, FWALL, FIN, FOUT, DUMMY, d1 = 0.0, d2 = 0.0);
 
-problem solveregex([d1, d2], [dt1, dt2]) = 
+problem solveregex1([d1, d2], [dt1, dt2]) = 
      int2d(Th)(2 * mu * dot(eps2(d1, d2), eps2(dt1, dt2)) + lambda * div2(d1, d2) * div2(dt1, dt2))
         + int1d(Sh, FREE)(dL * dot([dt1, dt2], N2))
         + on(SLOAD, SWALL, FWALL, FIN, FOUT, DUMMY, d1 = 0.0, d2 = 0.0);
