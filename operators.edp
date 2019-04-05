@@ -34,6 +34,6 @@ macro eps2(u1, u2) (1./2 * (Jaco2(u1, u2) + trJaco2(u1, u2))) //EOM
 macro eps3(u1, u2, u3) (1./2 * (Jaco3(u1, u2, u3) + trJaco3(u1, u2, u3))) //EOM
 
 
-/* tangential gradient of a vector field */ 
-macro tgrad2(u) (grad2(u) - grad2(u)' * N2 * N2) //EOM                                                    
-macro tgrad3(u) (grad3(u) - grad3(u)' * N3 * N3) //EOM  
+/* tangential gradient of a scalar field */ 
+macro tgrad2(u) (grad2(u) - grad2(u)' * N2 * N2) //EOM
+macro tgrad3(u) (grad3(u) - grad3(u)' * N3 * N3) //EOM

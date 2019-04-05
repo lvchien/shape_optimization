@@ -29,7 +29,7 @@ real w = getARGV("--w", 1.0);                                               // W
 real b0 = getARGV("--b0", 1e-1);                                            // Initial value of b
 real bmax = getARGV("--bmax", 1e2);                                         // Maximal value of b, no longer update if b > bmax
 real l0 = getARGV("--l0", 0.0);                                             // Initial value of l
-real gm = getARGV("--gm", 0.01);                                            // Regularization parameter 
+real gm = getARGV("--gm", 0.01);                                            // Regularization parameter
 real tau0 = getARGV("--tau0", 1e-1);                                        // Initial descent step length
 real beta = getARGV("--beta", 0.7);                                         // Update step length 
 real sm = getARGV("--sm", 1e-4);                                            // Armijo condition's coefficient
@@ -43,7 +43,7 @@ real mshsize = getARGV("--mshsize", 0.02);                                  // R
 /*------------------------------------ IO configurations -------------------------------------*/
 string fmsh = getARGV("--fmsh", "fluid");                                   // File name of fluid domain's mesh
 string smsh = getARGV("--smsh", "solid");                                   // File name of solid domain's mesh
-string dmsh = getARGV("--dmsh", "solid");                                   // File name of whole domain's mesh
+string dmsh = getARGV("--dmsh", "domain");                                  // File name of whole domain's mesh
 string folder = getARGV("--folder", "results");                             // folder contains output
 int steps = getARGV("--steps", 3);                                          // number of steps to save results once
 /*--------------------------------------------------------------------------------------------*/
@@ -52,9 +52,9 @@ system("mkdir " + folder);
 ofstream fout(folder + "/out.dat");
 
 /* Save the command */
-ofstream cmd(folder + "/command.sh");
+ofstream cmd(folder + "command.sh");
 for (int i = 0; i < ARGV.n; i++)
-    cmd << ARGV[i] << " ";
+    cmd << ARGV[i] << endl;
 cmd.flush;
 
 /* Load mesh */
@@ -81,26 +81,17 @@ Dh d1, d2, dt1, dt2;
 /*-------------------------- Set initial values for each test case --------------------------*/
 if(case == 1)
 {
-    ff1 = 0.0; ff2 = 0.0;
+    ff1 = 0.0; ff2 = -1.0;
     vin1 = 16 * y * (0.5 - y); vin2 = 0.0;
+    vw1 = 0.0; vw2 = 0.0;
     vout1 = 0.0; vout2 = 0.0;
 
-    fs1 = 0.0; fs2 = 0.0;
+    fs1 = 0.0; fs2 = -1.0;
+    uload1 = 0.0; uload2 = 0.0;
 
     E = 0.1; nu = 0.005; nus = 0.05;
 }
 else if(case == 2)
-{
-    ff1 = 0.0; ff2 = 0.0;
-    vin1 = 1.0; vin2 = 0.0;
-    vw1 = 0.0; vw2 = 0.0;
-    vout1 = 0.0; vout2 = 0.0;
-
-    fs1 = 0.0; fs2 = 0.0;
-    uload1 = 0.0; uload2 = 0.0;
-
-}
-else if(case == 3)
 {
     ff1 = 0.0; ff2 = 0.0;
     vin1 = 4.0 * y * (1.0 - y); vin2 = 0.0;
@@ -168,12 +159,12 @@ problem adjointstokes2D([va1, va2, pa], [vt1, vt2, pt]) =
         + on(FWALL, SWALL, FIN, va1 = 0.0, va2 = 0.0)
         + on(FREE, va1 = ua1, va2 = ua2);
 
-problem solveregex([d1, d2], [dt1, dt2]) = 
+problem solveregex1([d1, d2], [dt1, dt2]) = 
   int2d(Th)(gm * dot(Jaco2(d1, d2), Jaco2(dt1, dt2)) + dot([d1, d2], [dt1, dt2]))
        + int1d(Sh, FREE)(dL * dot([dt1, dt2], N2))
        + on(SLOAD, SWALL, FWALL, FIN, FOUT, DUMMY, d1 = 0.0, d2 = 0.0);
 
-problem solveregex1([d1, d2], [dt1, dt2]) = 
+problem solveregex([d1, d2], [dt1, dt2]) = 
      int2d(Th)(2 * mu * dot(eps2(d1, d2), eps2(dt1, dt2)) + lambda * div2(d1, d2) * div2(dt1, dt2))
         + int1d(Sh, FREE)(dL * dot([dt1, dt2], N2))
         + on(SLOAD, SWALL, FWALL, FIN, FOUT, DUMMY, d1 = 0.0, d2 = 0.0);
@@ -190,9 +181,8 @@ macro solveadjoint()
     adjointstokes2D;
 } //EOM
 
-/*----------------------------------------------------------------------------------------------*/
 
-/*----------------------------------------- Main block -----------------------------------------*/
+/*---------------------------------------- Main block -----------------------------------------*/
 /* Initial values */
 vol0 = vol(Sh) + vol(Fh);
 convol = vol0 * vf;
