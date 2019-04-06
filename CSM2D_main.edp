@@ -7,7 +7,6 @@ include "operators.edp"
 int FREE = 1;                                                               // Free boundary
 int SWALL = 21;                                                             // Homogeneous Dirichlet boundary of solid domain
 int SLOAD = 22;                                                             // Neumann boundary of solid domain
-int DUMMY = 30;                                                             // Dummy boundary
 
 
 /* Constants */
@@ -15,7 +14,7 @@ real epsilon = 1e-8;
 
 /*----------------------------------- Problem configurations -----------------------------------*/
 int case = getARGV("--case", 1);                                            // Test case
-real E = getARGV("--E", 21.0);                                              // The Young modulus of solid
+real E = getARGV("--E", 1.0);                                               // The Young modulus of solid
 real nus = getARGV("--nus", 0.3);                                           // The Poisson ratio of solid
 real vf = getARGV("--vf", 1.) ;                                             // Volume ratio
 /*----------------------------------------------------------------------------------------------*/
@@ -34,7 +33,7 @@ real minarea = getARGV("--minarea", 1e-6);                                  // R
 real mshsize = getARGV("--mshsize", 0.02);                                  // Required edge size when remeshing : hmax = mshsize, hmin = mshsize/sqrt(2)
 /*--------------------------------------------------------------------------------------------*/
 
-
+ 
 /*------------------------------------ IO configurations -------------------------------------*/
 string smsh = getARGV("--smsh", "solid");                                   // File name of solid domain's mesh
 string folder = getARGV("--folder", "results");                             // Folder containing output
@@ -45,7 +44,7 @@ system("mkdir " + folder);
 ofstream fout(folder + "/out.dat");
 
 /* Save the command */
-ofstream cmd(folder + "command.sh");
+ofstream cmd(folder + "/command.sh");
 for (int i = 0; i < ARGV.n; i++)
     cmd << ARGV[i] << endl;
 cmd.flush;
@@ -60,25 +59,15 @@ fespace SUh(Sh, P1);
 
 
 /* Declare FE variables */
-SUh u1, u2, ua1, ua2, ut1, ut2, fs1, fs2, uload1, uload2;
+SUh u1, u2, ut1, ut2, fs1, fs2, uload1, uload2;
 SUh d1, d2, dt1, dt2;
 
 
 /*-------------------------- Set initial values for each test case --------------------------*/
-// TODO
 if(case == 1)
 {
     fs1 = 0.0; fs2 = -1.0;
     uload1 = 0.0; uload2 = 0.0;
-
-    E = 0.1; nu = 0.005; nus = 0.05;
-}
-else if(case == 2)
-{
-    fs1 = 0.0; fs2 = 0.0;
-    uload1 = 0.0; uload2 = 0.0;
-
-    E = 15.0; nu = 0.01; nus = 0.35;
 }
 /*--------------------------------------------------------------------------------------------*
 
@@ -92,7 +81,6 @@ real J0, vol0, convol;
 /*-------------------------- Declare functions and their derivatives --------------------------*/
 macro compliance() (int2d(Sh)(2.0 * mu * dot(eps2(u1, u2), eps2(u1, u2)) + lambda * div2(u1, u2) * div2(u1, u2))) //EOM
 macro J() (compliance) //EOM
-// TODO
 macro dJ() (2.0 * (fs1 * u1 + fs2 * u2) - 2.0 * mu * dot(eps2(u1, u2), eps2(u1, u2)) - lambda * div2(u1, u2) * div2(u1, u2)) //EOM
 
 macro vol(Th) (int2d(Th)(1.)) //EOM
@@ -110,16 +98,21 @@ problem elastic2D([u1, u2], [ut1, ut2]) =
         - int1d(Sh, SLOAD)(uload1 * ut1 + uload2 * ut2)
         + on(SWALL, u1 = 0.0, u2 = 0.0);
 
-// TODO
-problem solveregex1([d1, d2], [dt1, dt2]) = 
-  int2d(Th)(gm * dot(Jaco2(d1, d2), Jaco2(dt1, dt2)) + dot([d1, d2], [dt1, dt2]))
-       + int1d(Sh, FREE)(dL * dot([dt1, dt2], N2))
-       + on(SLOAD, SWALL, FWALL, FIN, FOUT, DUMMY, d1 = 0.0, d2 = 0.0);
-
 problem solveregex([d1, d2], [dt1, dt2]) = 
-     int2d(Sh)(2 * mu * dot(eps2(d1, d2), eps2(dt1, dt2)) + lambda * div2(d1, d2) * div2(dt1, dt2))
+    int2d(Sh)(gm * dot(Jaco2(d1, d2), Jaco2(dt1, dt2)) + dot([d1, d2], [dt1, dt2]))
         + int1d(Sh, FREE)(dL * dot([dt1, dt2], N2))
-        + on(SLOAD, SWALL, DUMMY, d1 = 0.0, d2 = 0.0);
+        + on(SLOAD, SWALL, d1 = 0.0, d2 = 0.0);
+
+problem solveregex1([d1, d2], [dt1, dt2]) = 
+    int2d(Sh)(gm * dot(Jaco2(d1, d2), Jaco2(dt1, dt2)) 
+        + (1 - gm) * (dot(tgrad2(d1), tgrad2(dt1)) + dot(tgrad2(d2), tgrad2(dt2))))
+        + int1d(Sh, FREE)(dL * dot([dt1, dt2], N2))
+        + on(SLOAD, SWALL, d1 = 0.0, d2 = 0.0);
+
+problem solveregex2([d1, d2], [dt1, dt2]) = 
+    int2d(Sh)(2 * mu * dot(eps2(d1, d2), eps2(dt1, dt2)) + lambda * div2(d1, d2) * div2(dt1, dt2))
+        + int1d(Sh, FREE)(dL * dot([dt1, dt2], N2))
+        + on(SLOAD, SWALL, d1 = 0.0, d2 = 0.0);
 
 
 /*---------------------------------------- Main block -----------------------------------------*/

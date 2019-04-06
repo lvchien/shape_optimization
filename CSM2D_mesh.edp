@@ -1,0 +1,34 @@
+include "getARGV.idp"
+
+int case = getARGV("--case", 1);                                // Case study
+string smsh = getARGV("--smsh", "solid");                       // File name of the mesh of solid domain
+int nps = getARGV("--nps", 3);                                  // Number of meshing points
+
+/* Label of borders */
+int FREE = 1;
+int SWALL = 21;
+int SLOAD = 22;
+
+mesh Sh;
+system("mkdir " + "meshes/CSM");
+
+/* Build meshes */
+
+if(case == 1)
+{
+    border L11(t = 0.0, 0.5){x = t; y = 0.0; label = FREE;}
+    border L21(t = 0.0, 0.45){x = 0.5; y = t; label = FREE;}
+    border L22(t = 0.45, 0.55){x = 0.5; y = t; label = SLOAD;}
+    border L23(t = 0.55, 1.0){x = 0.5; y = t; label = FREE;}
+    border L31(t = 0.5, 0){x = t; y = 1.0; label = FREE;}
+    border L41(t = 1.0, 0.9){x = 0.0; y = t; label = SWALL;}
+    border L42(t = 0.9, 0.1){x = 0.0; y = t; label = FREE;}
+    border L43(t = 0.1, 0.0){x = 0.0; y = t; label = SWALL;}
+
+    Sh = buildmesh(L11(5 * nps) + L21(5 * nps) + L22(1 * nps) + L23(5 * nps) 
+            + L31(5 * nps) + L41(1 * nps) + L42(8 * nps) + L43(1 * nps));
+    
+}
+
+savemesh(Sh, "meshes/CSM/" + smsh + ".mesh");
+plot(Sh);

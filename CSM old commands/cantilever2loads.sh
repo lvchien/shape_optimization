@@ -1,0 +1,1 @@
+C:\Program Files (x86)\FreeFem++\FreeFem++.exe main.edp --config 2 --testcase 3 --meshname cantilever2loads --resu results\Elastic\cantilever2loads --save 1 --ns 3 --augLag 1 --regex 1 --cr 0.25 --b0 1. --bmax 100. --l0 0.0 --gm 0.9 --tau 0.0005 --betamin 0.5 --betamax 0.7 --sm 1e-4 --alpha 1.05 --minarea 1e-4 --meshsize 0.03 --jmax 1000 
