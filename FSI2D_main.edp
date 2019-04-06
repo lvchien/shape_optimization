@@ -46,6 +46,7 @@ string smsh = getARGV("--smsh", "solid");                                   // F
 string dmsh = getARGV("--dmsh", "domain");                                  // File name of whole domain's mesh
 string folder = getARGV("--folder", "results");                             // Folder containing output
 int steps = getARGV("--steps", 3);                                          // Number of steps to save results once
+int regex = getARGV("--regex", 1);                                          // Regularization-extension config
 /*--------------------------------------------------------------------------------------------*/
 
 system("mkdir " + folder);
@@ -159,12 +160,12 @@ problem adjointstokes2D([va1, va2, pa], [vt1, vt2, pt]) =
         + on(FWALL, SWALL, FIN, va1 = 0.0, va2 = 0.0)
         + on(FREE, va1 = ua1, va2 = ua2);
 
-problem solveregex1([d1, d2], [dt1, dt2]) = 
+problem regex1([d1, d2], [dt1, dt2]) = 
   int2d(Th)(gm * dot(Jaco2(d1, d2), Jaco2(dt1, dt2)) + dot([d1, d2], [dt1, dt2]))
        + int1d(Sh, FREE)(dL * dot([dt1, dt2], N2))
        + on(SLOAD, SWALL, FWALL, FIN, FOUT, DUMMY, d1 = 0.0, d2 = 0.0);
 
-problem solveregex([d1, d2], [dt1, dt2]) = 
+problem regex2([d1, d2], [dt1, dt2]) = 
      int2d(Th)(2 * mu * dot(eps2(d1, d2), eps2(dt1, dt2)) + lambda * div2(d1, d2) * div2(dt1, dt2))
         + int1d(Sh, FREE)(dL * dot([dt1, dt2], N2))
         + on(SLOAD, SWALL, FWALL, FIN, FOUT, DUMMY, d1 = 0.0, d2 = 0.0);
@@ -179,6 +180,14 @@ macro solveadjoint()
 {
     adjointelastic2D;
     adjointstokes2D;
+} //EOM
+
+macro solveregex()
+{
+    if(regex == 1)
+        regex1;
+    else if(regex == 2)
+        regex2;
 } //EOM
 
 
