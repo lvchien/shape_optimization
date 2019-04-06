@@ -5,9 +5,6 @@ include "operators.edp"
 
 /* Label of borders */
 int FREE = 1;                                                               // Free boundary
-int FWALL = 11;                                                             // Homogeneous Dirichlet boundary of fluid domain
-int FIN = 12;                                                               // Non-homogeneous Dirichlet boundary of fluid domain
-int FOUT = 13;                                                              // Neumann boundary of fluid domain
 int SWALL = 21;                                                             // Homogeneous Dirichlet boundary of solid domain
 int SLOAD = 22;                                                             // Neumann boundary of solid domain
 int DUMMY = 30;                                                             // Dummy boundary
@@ -18,11 +15,9 @@ real epsilon = 1e-8;
 
 /*----------------------------------- Problem configurations -----------------------------------*/
 int case = getARGV("--case", 1);                                            // Test case
-real nu = getARGV("--nu", 0.05);                                            // The kinematic viscosity coefficient of fluid
 real E = getARGV("--E", 21.0);                                              // The Young modulus of solid
 real nus = getARGV("--nus", 0.3);                                           // The Poisson ratio of solid
 real vf = getARGV("--vf", 1.) ;                                             // Volume ratio
-real w = getARGV("--w", 1.0);                                               // Weight parameter of the objective functions
 /*----------------------------------------------------------------------------------------------*/
 
 /*---------------------------------- Numerical configurations ----------------------------------*/                                                                
@@ -41,9 +36,7 @@ real mshsize = getARGV("--mshsize", 0.02);                                  // R
 
 
 /*------------------------------------ IO configurations -------------------------------------*/
-string fmsh = getARGV("--fmsh", "fluid");                                   // File name of fluid domain's mesh
 string smsh = getARGV("--smsh", "solid");                                   // File name of solid domain's mesh
-string dmsh = getARGV("--dmsh", "domain");                                  // File name of whole domain's mesh
 string folder = getARGV("--folder", "results");                             // Folder containing output
 int steps = getARGV("--steps", 3);                                          // Number of steps to save results once
 /*--------------------------------------------------------------------------------------------*/
@@ -58,24 +51,17 @@ for (int i = 0; i < ARGV.n; i++)
 cmd.flush;
 
 /* Load mesh */
-mesh Fh = readmesh("meshes/FSI/" + fmsh + ".mesh");
-mesh Sh = readmesh("meshes/FSI/" + smsh + ".mesh");
-mesh Th = readmesh("meshes/FSI/" + dmsh + ".mesh");
-plot(Fh, Sh);
-cout << "Done load meshes!" << endl;
+mesh Sh = readmesh("meshes/CSM/" + smsh + ".mesh");
+plot(Sh);
+cout << "Done load mesh!" << endl;
 
 /* Declare FE spaces */
-fespace FVh(Fh, P2);
-fespace FPh(Fh, P1);
 fespace SUh(Sh, P1);
-fespace Dh(Th, P1);
 
 
 /* Declare FE variables */
-FVh v1, v2, va1, va2, vt1, vt2, ff1, ff2, vin1, vin2, vw1, vw2, vout1, vout2;
-FPh p, pa, pt;
 SUh u1, u2, ua1, ua2, ut1, ut2, fs1, fs2, uload1, uload2;
-Dh d1, d2, dt1, dt2;
+SUh d1, d2, dt1, dt2;
 
 
 /*-------------------------- Set initial values for each test case --------------------------*/
@@ -114,8 +100,7 @@ real J0, vol0, convol;
 
 /*-------------------------- Declare functions and their derivatives --------------------------*/
 macro compliance() (int2d(Sh)(2.0 * mu * dot(eps2(u1, u2), eps2(u1, u2)) + lambda * div2(u1, u2) * div2(u1, u2))) //EOM
-macro dissipatedenergy() (int2d(Fh)(2.0 * nu * dot(eps2(v1, v2), eps2(v1, v2)))) //EOM
-macro J() (w * compliance + (1 - w) * dissipatedenergy) //EOM
+macro J() compliance //EOM
 macro dJ() (w * (2.0 * mu * dot(eps2(u1, u2), eps2(u1, u2)) + lambda * div2(u1, u2) * div2(u1, u2))
             + 2.0 * (1 - w) * nu * dot(eps2(v1, v2), eps2(v1, v2))
             - (fs1 * ua1 + fs2 * ua2) + (ff1 * va1 + ff2 * va2)
@@ -132,14 +117,6 @@ macro dL() (dJ/J0 - l * dvol/vol0 + b * dvol * (vol(Sh) - convol)/(vol0 ^ 2)) //
 
 
 /*-------------------------------- Declare variational problems --------------------------------*/
-problem stokes2D([v1, v2, p], [vt1, vt2, pt]) = 
-    int2d(Fh)(2.0 * nu * dot(eps2(v1, v2), eps2(vt1, vt2)) - p * div2(vt1, vt2) - pt * div2(v1, v2))
-        - int2d(Fh)(ff1 * vt1 + ff2 * vt2)
-        - int2d(Fh)(p * pt * epsilon)
-        - int1d(Fh, FOUT)(vout1 * vt1 + vout2 * vt2)
-        + on(FIN, v1 = vin1, v2 = vin2)
-        + on(FWALL, SWALL, FREE, v1 = 0.0, v2 = 0.0);
-
 problem elastic2D([u1, u2], [ut1, ut2]) = 
     int2d(Sh)(2.0 * mu * dot(eps2(u1, u2), eps2(ut1, ut2)) + lambda * div2(u1, u2) * div2(ut1, ut2))
         - int2d(Sh)(fs1 * ut1 + fs2 * ut2)
@@ -151,13 +128,6 @@ problem adjointelastic2D([ua1, ua2], [ut1, ut2]) =
     int2d(Sh)(2.0 * mu * dot(eps2(ua1, ua2), eps2(ut1, ut2)) + lambda * div2(ua1, ua2) * div2(ut1, ut2))
         + int2d(Sh)(2 * w * (2.0 * mu * dot(eps2(u1, u2), eps2(ut1, ut2)) + lambda * div2(u1, u2) * div2(ut1, ut2)))
         + on(SWALL, ua1 = 0.0, ua2 = 0.0);
-
-problem adjointstokes2D([va1, va2, pa], [vt1, vt2, pt]) = 
-    int2d(Fh)(2.0 * nu * dot(eps2(va1, va2), eps2(vt1, vt2)) - pa * div2(vt1, vt2) - pt * div2(va1, va2))
-        + int2d(Fh)(4.0 * (1 - w) * nu * dot(eps2(v1, v2), eps2(vt1, vt2)))
-        - int2d(Fh)(pa * pt * epsilon)
-        + on(FWALL, SWALL, FIN, va1 = 0.0, va2 = 0.0)
-        + on(FREE, va1 = ua1, va2 = ua2);
 
 problem solveregex1([d1, d2], [dt1, dt2]) = 
   int2d(Th)(gm * dot(Jaco2(d1, d2), Jaco2(dt1, dt2)) + dot([d1, d2], [dt1, dt2]))
@@ -171,14 +141,12 @@ problem solveregex([d1, d2], [dt1, dt2]) =
 
 macro solvestate()
 {
-    stokes2D;
     elastic2D;
 } //EOM
 
 macro solveadjoint()
 {
     adjointelastic2D;
-    adjointstokes2D;
 } //EOM
 
 
