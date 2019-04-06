@@ -12,9 +12,11 @@ int SLOAD = 22;
 mesh Sh;
 system("mkdir " + "meshes/CSM");
 
+
 /* Build meshes */
 
-if(case == 1)
+// Short cantilever test 
+if(case == 1)                                                              
 {
     border L11(t = 0.0, 0.5){x = t; y = 0.0; label = FREE;}
     border L21(t = 0.0, 0.45){x = 0.5; y = t; label = FREE;}
@@ -26,8 +28,108 @@ if(case == 1)
     border L43(t = 0.1, 0.0){x = 0.0; y = t; label = SWALL;}
 
     Sh = buildmesh(L11(5 * nps) + L21(5 * nps) + L22(1 * nps) + L23(5 * nps) 
-            + L31(5 * nps) + L41(1 * nps) + L42(8 * nps) + L43(1 * nps));
-    
+        + L31(5 * nps) + L41(1 * nps) + L42(8 * nps) + L43(1 * nps));   
+}
+
+// Long cantilever test 
+else if(case == 2)
+{
+    real r = 0.15;                                                          // radius of holes
+
+    border L11(t = -1.0, 1.0){x = t; y = 0.0; label = FREE;}
+    border L21(t = 0.0, 0.45){x = 1.0; y = t; label = FREE;}
+    border L22(t = 0.45, 0.55){x = 1.0; y = t; label = SLOAD;}
+    border L23(t = 0.55, 1.0){x = 1.0; y = t; label = FREE;}
+    border L31(t = 1.0, -1.0){x = t; y = 1.0; label = FREE;}
+    border L41(t = 1.0, 0.9){x = -1.0; y = t; label = SWALL;}
+    border L42(t = 0.9, 0.1){x = -1.0; y = t; label = FREE;}
+    border L43(t = 0.1, 0.0){x = -1.0; y = t; label = SWALL;}
+
+        
+    border C11(t = 0, 2 * pi){x = -0.6 + r * cos(t); y = 0.22 + r * sin(t); label = FREE;}
+    border C12(t = 0, 2 * pi){x = 0.2 + r * cos(t); y = 0.22 + r * sin(t); label = FREE;}
+    border C21(t = 0, 2 * pi){x = -0.2 + r * cos(t); y = 0.5 + r * sin(t); label = FREE;}
+    border C22(t = 0, 2 * pi){x = 0.6 + r * cos(t); y = 0.5 + r * sin(t); label = FREE;}
+    border C31(t = 0, 2 * pi){x = -0.6 + r * cos(t); y = 0.78 + r * sin(t); label = FREE;}
+    border C32(t = 0, 2 * pi){x = 0.2 + r * cos(t); y = 0.78 + r * sin(t); label = FREE;}
+
+    Sh = buildmesh(L11(20 * nps) + L21(5 * nps) + L22(1 * nps) + L23(5 * nps) + L31(20 * nps) 
+        + L41(1 * nps) + L42(8 * nps) + L43(1 * nps)
+        + C11(-10 * nps) + C12(-10 * nps) + C21(-10 * nps) + C22(-10 * nps) 
+        + C31(-10 * nps) + C32(-10 * nps));
+}
+
+// Cantilever with 2 loads
+else if(case == 3)
+{
+    real r = 0.2;                                                           // radius of holes
+
+    border L11(t = 0.0, 1.0){x = t; y = 0.0; label = FREE;}
+    border L21(t = 0.0, 0.2){x = 1.0; y = t; label = SLOAD;}
+    border L22(t = 0.2, 0.8){x = 1.0; y = t; label = FREE;}
+    border L23(t = 0.8, 1.0){x = 1.0; y = t; label = SLOAD;}
+    border L31(t = 1.0, 0.0){x = t; y = 1.0; label = FREE;}
+    border L41(t = 1.0, 0.95){x = 0.0; y = t; label = SWALL;}
+    border L42(t = 0.95, 0.05){x = 0.0; y = t; label = FREE;}
+    border L43(t = 0.05, 0.0){x = 0.0; y = t; label = SWALL;}
+
+        
+    border C11(t = 0, 2 * pi){x = 0.5 + r * cos(t); y = 0.25 + r * sin(t); label = FREE;}
+    border C31(t = 0, 2 * pi){x = 0.5 + r * cos(t); y = 0.75 + r * sin(t); label = FREE;}
+
+    Sh = buildmesh(L11(10 * nps) + L21(2 * nps) + L22(6 * nps) + L23(2 * nps) + L31(10 * nps) 
+        + L41(1 * nps) + L42(9 * nps) + L43(1 * nps) + C11(-15 * nps) + C31(-15 * nps));
+}
+
+// Bridge test
+else if(case == 4)
+{
+    real r = 0.25;                                                              // radius of holes
+
+    border L11(t = -1.0, -0.9){x = t; y = 0; label = SWALL;}
+    border L12(t = -0.9, -0.2){x = t; y = 0; label = FREE;}
+    border L13(t = -0.2, 0.2){x = t; y = 0; label = SLOAD;}
+    border L14(t = 0.2, 0.9){x = t; y = 0; label = FREE;}
+    border L15(t = 0.9, 1.0){x = t; y = 0; label = SWALL;}
+        
+    border L21(t = 0, 1.2){x = 1.0; y = t; label = FREE;}
+    border L22(t = 1.0, -1.0){x = t; y = 1.2; label = FREE;}
+    border L23(t = 1.2, 0){x = -1.0; y = t; label = FREE;}
+        
+    border C10(t = 0, 2 * pi){x = -0.6 + r * cos(t); y = 0.4 + r * sin(t); label = FREE;}
+    border C11(t = 0, 2 * pi){x = r * cos(t); y = 0.8 + r * sin(t); label = FREE;}
+    border C12(t = 0, 2 * pi){x = 0.6 + r * cos(t); y = 0.4 + r * sin(t); label = FREE;}
+
+    Sh = buildmesh(L11(1 * nps) + L12(7 * nps) + L13(4 * nps) + L14(7 * nps) + L15(1 * nps) 
+        + L21(12 * nps) + L22(20 * nps) + L23(12 * nps) 
+        + C10(-15 * nps) + C11(-15 * nps) + C12(-15 * nps));
+}
+
+// Mast test
+else if(case == 5)
+{
+    real r = 0.05;
+
+    border L11(t = 0.4, -0.4){x = t; y = 1.2; label = FREE;}
+    border L21(t = 1.2, 0.8){x = -0.4; y = t; label = FREE;}
+    border L31(t = -0.4, -0.35){x = t; y = 0.8; label = SLOAD;}
+    border L32(t = -0.35, -0.2){x = t; y = 0.8; label = FREE;}
+    border L41(t = 0.8, 0.0){x = -0.2; y = t; label = FREE;}
+    border L51(t = -0.2, -0.15){x = t; y = 0.0; label = SWALL;}
+    border L52(t = -0.15, 0.15){x = t; y = 0.0; label = FREE;}
+    border L53(t = 0.15, 0.2){x = t; y = 0.0; label = SWALL;}
+    border L42(t = 0.0, 0.8){x = 0.2; y = t; label = FREE;}
+    border L33(t = 0.2, 0.35){x = t; y = 0.8; label = FREE;}
+    border L34(t = 0.35, 0.4){x = t; y = 0.8; label = SLOAD;}
+    border L22(t = 0.8, 1.2){x = 0.4; y = t; label = FREE;}
+
+    border C1(t = 0, 2 * pi){x = -0.25 + r * cos(t); y = 1.0 + r * sin(t); label = FREE;}
+    border C2(t = 0, 2 * pi){x = r * cos(t); y = 1.0 + r * sin(t); label = FREE;}
+    border C3(t = 0, 2 * pi){x = 0.25 + r * cos(t); y = 1.0 + r * sin(t); label = FREE;}
+
+    Sh = buildmesh(L11(8 * nps) + L21(4 * nps) + L31(1 * nps) + L32(2 * nps) + L41(8 * nps) 
+        + L51(nps) + L52(3 * nps) + L53(1 * nps) + L42(8 * nps) + L33(2 * nps) + L34(1 * nps) + L22(4 * nps)
+        + C1(-7 * nps) + C2(-7 * nps) + C3(-7 * nps));
 }
 
 savemesh(Sh, "meshes/CSM/" + smsh + ".mesh");
