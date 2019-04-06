@@ -188,7 +188,7 @@ vol0 = vol(Sh) + vol(Fh);
 convol = vol0 * vf;
 solvestate;
 J0 = J;
-fout << compliance << " " <<  L << " " << vol(Sh) - convol << " " << l0 << endl;
+fout << J << " " <<  L << " " << vol(Sh) - convol << " " << l0 << endl;
 fout.flush;
 
 int imax = 1000;
@@ -269,7 +269,7 @@ for(int i = 0; i < imax; i++)
         }
 
         /* Save post-processing data */
-        fout << compliance << " " <<  L << " " << vol(Sh) - convol << " " << l << endl;
+        fout << J << " " <<  L << " " << vol(Sh) - convol << " " << l << endl;
         fout.flush;
         if(i % steps == 0)
         {
