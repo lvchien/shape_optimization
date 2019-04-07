@@ -65,10 +65,10 @@ SUh d1, d2, dt1, dt2;
 
 
 /*-------------------------- Set initial values for each test case --------------------------*/
-if(case == 1)
+if(case == 2)
 {
-    fs1 = 0.0; fs2 = -1.0;
-    uload1 = 0.0; uload2 = 0.0;
+    fs1 = 0.0; fs2 = 0.0;
+    uload1 = 0.0; uload2 = -1.0;
 }
 /*--------------------------------------------------------------------------------------------*
 
@@ -81,8 +81,9 @@ real J0, vol0, convol;
 
 /*-------------------------- Declare functions and their derivatives --------------------------*/
 macro compliance() (int2d(Sh)(2.0 * mu * dot(eps2(u1, u2), eps2(u1, u2)) + lambda * div2(u1, u2) * div2(u1, u2))) //EOM
+macro dcom() (2.0 * (fs1 * u1 + fs2 * u2) - 2.0 * mu * dot(eps2(u1, u2), eps2(u1, u2)) - lambda * div2(u1, u2) * div2(u1, u2)) //EOM 
 macro J() (compliance) //EOM
-macro dJ() (2.0 * (fs1 * u1 + fs2 * u2) - 2.0 * mu * dot(eps2(u1, u2), eps2(u1, u2)) - lambda * div2(u1, u2) * div2(u1, u2)) //EOM
+macro dJ() (dcom) //EOM
 
 macro vol(Th) (int2d(Th)(1.)) //EOM
 macro dvol() (1.0) //EOM
@@ -105,8 +106,8 @@ problem regex1([d1, d2], [dt1, dt2]) =
         + on(SLOAD, SWALL, d1 = 0.0, d2 = 0.0);
 
 problem regex2([d1, d2], [dt1, dt2]) = 
-    int2d(Sh)(gm * dot(Jaco2(d1, d2), Jaco2(dt1, dt2)) 
-        + (1 - gm) * (dot(tgrad2(d1), tgrad2(dt1)) + dot(tgrad2(d2), tgrad2(dt2))))
+    int2d(Sh)(gm * dot(Jaco2(d1, d2), Jaco2(dt1, dt2)))
+        + int1d(Sh, FREE)((1 - gm) * (dot(tgrad2(d1), tgrad2(dt1)) + dot(tgrad2(d2), tgrad2(dt2))))
         + int1d(Sh, FREE)(dL * dot([dt1, dt2], N2))
         + on(SLOAD, SWALL, d1 = 0.0, d2 = 0.0);
 
