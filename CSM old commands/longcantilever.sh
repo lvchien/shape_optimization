@@ -1,0 +1,1 @@
+C:\Program Files (x86)\FreeFem++\FreeFem++.exe main.edp --config 2 --testcase 2 --meshname longcantilever --resu results\Elastic\longcantilever --save 1 --ns 3 --augLag 1 --regex 0 --cr 0.3 --bo 1. --bmax 100. --l0 0.0 --gm 0.05 --tau 0.0001 --betamin 0.5 --betamax 0.7 --sm 1e-4 --alpha 1.05 --minarea 1e-4 --meshsize 0.03 

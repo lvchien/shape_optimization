@@ -1,0 +1,1 @@
+C:\Program Files (x86)\FreeFem++\FreeFem++.exe main.edp --config 2 --testcase 6 --meshname mast --resu results\Elastic\mast1 --save 1 --ns 3 --augLag 1 --regex 0 --move 1 --cr 0.2 --b0 10. --bmax 1000. --l0 0.0 --movestep 1e-2 --betamin 0.5 --betamax 0.7 --sm 1e-4 --alpha 1.05 --gm 0.05 --minarea 1e-4 --meshsize 0.03 
