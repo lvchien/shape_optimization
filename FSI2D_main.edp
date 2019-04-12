@@ -82,12 +82,12 @@ Dh d1, d2, dt1, dt2;
 /*-------------------------- Set initial values for each test case --------------------------*/
 if(case == 1)
 {
-    ff1 = 0.0; ff2 = -1.0;
+    ff1 = 0.0; ff2 = 0.0;
     vin1 = 16 * y * (0.5 - y); vin2 = 0.0;
     vw1 = 0.0; vw2 = 0.0;
     vout1 = 0.0; vout2 = 0.0;
 
-    fs1 = 0.0; fs2 = -1.0;
+    fs1 = 0.0; fs2 = 0.0;
     uload1 = 0.0; uload2 = 0.0;
 
     E = 0.1; nu = 0.005; nus = 0.05;
@@ -235,7 +235,7 @@ for(int i = 0; i < imax; i++)
         {
             mesh tmpFh = Fh;
             mesh tmpSh = Sh;
-            real beforeL = L;
+            real beforeL/*-------------------------------- Declare variational problems --------------------------------*/ = L;
             
             Fh = movemesh(Fh, [x + tau * d1, y + tau * d2]);
             Sh = movemesh(Sh, [x + tau * d1, y + tau * d2]);
