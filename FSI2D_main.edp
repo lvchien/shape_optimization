@@ -53,7 +53,7 @@ system("mkdir " + folder);
 ofstream fout(folder + "/out.dat");
 
 /* Save the command */
-ofstream cmd(folder + "command.sh");
+ofstream cmd(folder + "/command.sh");
 for (int i = 0; i < ARGV.n; i++)
     cmd << ARGV[i] << endl;
 cmd.flush;
@@ -205,16 +205,13 @@ for(int i = 0; i < imax; i++)
 {
     solveadjoint;
     solveregex;
+    plot(Th, [d1, d2], cmm = "Iteration i = " + i + "/" + imax);
     real dd = int1d(Sh, FREE)(dL * dot([d1, d2], N2));
     cout << "Directional derivative: " << dd << endl;
 
     real sgn = sqrt(int1d(Sh, FREE)(d1^2 + d2^2));
     if(sgn > minsgn)
     {
-        Fh = adaptmesh(Fh, hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
-        Sh = adaptmesh(Sh, hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
-        plot(Th, [d1, d2], cmm = "Iteration i = " + i + "/" + imax);
-
         real tau = tau0;
         real fminarea = checkmovemesh(Fh, [x + tau * d1, y + tau * d2]);
         real sminarea = checkmovemesh(Sh, [x + tau * d1, y + tau * d2]);
@@ -226,6 +223,16 @@ for(int i = 0; i < imax; i++)
         {
             j++;
             cout << "Iteration j = " << j << "/" << jmax << ": Step length = " << tau << endl;
+            
+            Fh = adaptmesh(Fh, hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
+            Sh = adaptmesh(Sh, hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
+            Th = adaptmesh(Th, hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
+
+            solvestate;
+            solveadjoint;
+            solveregex;
+            plot(Sh, [u1, u2]);
+
             tau *= beta;
             fminarea = checkmovemesh(Fh, [x + tau * d1, y + tau * d2]);
             sminarea = checkmovemesh(Sh, [x + tau * d1, y + tau * d2]);
@@ -235,7 +242,7 @@ for(int i = 0; i < imax; i++)
         {
             mesh tmpFh = Fh;
             mesh tmpSh = Sh;
-            real beforeL/*-------------------------------- Declare variational problems --------------------------------*/ = L;
+            real beforeL = L;
             
             Fh = movemesh(Fh, [x + tau * d1, y + tau * d2]);
             Sh = movemesh(Sh, [x + tau * d1, y + tau * d2]);
