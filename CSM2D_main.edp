@@ -47,7 +47,7 @@ ofstream fout(folder + "/out.dat");
 /* Save the command */
 ofstream cmd(folder + "/command.sh");
 for (int i = 0; i < ARGV.n; i++)
-    cmd << ARGV[i] << endl;
+    cmd << ARGV[i];
 cmd.flush;
 
 /* Load mesh */
@@ -64,13 +64,10 @@ SUh u1, u2, ut1, ut2, fs1, fs2, uload1, uload2;
 SUh d1, d2, dt1, dt2;
 
 
-/*-------------------------- Set initial values for each test case --------------------------*/
-if(case == 2)
-{
-    fs1 = 0.0; fs2 = 0.0;
-    uload1 = 0.0; uload2 = -1.0;
-}
-/*--------------------------------------------------------------------------------------------*
+/*------------------------Initial values for each test case --------------------------*/
+fs1 = 0.0; fs2 = 0.0;
+uload1 = 0.0; uload2 = -1.0;
+/*------------------------------------------------------------------------------------*/
 
 /* Variables */
 real mu = E/(2 * (1 + nus));
@@ -101,18 +98,13 @@ problem elastic2D([u1, u2], [ut1, ut2]) =
         + on(SWALL, u1 = 0.0, u2 = 0.0);
 
 problem regex1([d1, d2], [dt1, dt2]) = 
-    int2d(Sh)(gm * dot(Jaco2(d1, d2), Jaco2(dt1, dt2)) + dot([d1, d2], [dt1, dt2]))
+    int2d(Sh)(gm * dot(eps2(d1, d2), eps2(dt1, dt2)) + dot([d1, d2], [dt1, dt2]))
         + int1d(Sh, FREE)(dL * dot([dt1, dt2], N2))
         + on(SLOAD, SWALL, d1 = 0.0, d2 = 0.0);
 
 problem regex2([d1, d2], [dt1, dt2]) = 
-    int2d(Sh)(gm * dot(Jaco2(d1, d2), Jaco2(dt1, dt2)))
+    int2d(Sh)(gm * (2 * mu * dot(eps2(d1, d2), eps2(dt1, dt2)) + lambda * div2(d1, d2) * div2(dt1, dt2)))
         + int1d(Sh, FREE)((1 - gm) * (dot(tgrad2(d1), tgrad2(dt1)) + dot(tgrad2(d2), tgrad2(dt2))))
-        + int1d(Sh, FREE)(dL * dot([dt1, dt2], N2))
-        + on(SLOAD, SWALL, d1 = 0.0, d2 = 0.0);
-
-problem regex3([d1, d2], [dt1, dt2]) = 
-    int2d(Sh)(2 * mu * dot(eps2(d1, d2), eps2(dt1, dt2)) + lambda * div2(d1, d2) * div2(dt1, dt2))
         + int1d(Sh, FREE)(dL * dot([dt1, dt2], N2))
         + on(SLOAD, SWALL, d1 = 0.0, d2 = 0.0);
 
@@ -122,8 +114,6 @@ macro solveregex()
         regex1;
     else if(regex == 2)
         regex2;
-    else if(regex == 3)
-        regex3;
 } //EOM
 
 
@@ -139,6 +129,7 @@ fout.flush;
 int imax = 1000;
 for(int i = 0; i < imax; i++)
 {
+    elastic2D;
     solveregex;
     real dd = int1d(Sh, FREE)(dL * dot([d1, d2], N2));
     cout << "Directional derivative: " << dd << endl;
@@ -146,62 +137,51 @@ for(int i = 0; i < imax; i++)
     real sgn = sqrt(int1d(Sh, FREE)(d1^2 + d2^2));
     if(sgn > minsgn)
     {
-        Sh = adaptmesh(Sh, hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
-        plot(Sh, [d1, d2], cmm = "Iteration i = " + i + "/" + imax);
-
         real tau = tau0;
-        real sminarea = checkmovemesh(Sh, [x + tau * d1, y + tau * d2]);
+        real beforeL = L;
+        mesh tmpSh = Sh;
 
-        int j = 0;
-        int jmax = 40;
+        int j, jmax = 40;
 
-        while(j < jmax && !(sminarea >= minarea))
+        for (j = 0; j < jmax; j++) 
         {
-            j++;
-            cout << "Iteration j = " << j << "/" << jmax << ": Step length = " << tau << endl;
-            tau *= beta;
-            sminarea = checkmovemesh(Sh, [x + tau * d1, y + tau * d2]);
-        }
+            real sminarea = checkmovemesh(Sh, [x + tau * d1, y + tau * d2]);
+            int k = 0;
+            int kmax = 5;
 
-        if(j < jmax)
-        {
-            mesh tmpSh = Sh;
-            real beforeL = L;
-            
-            Sh = movemesh(Sh, [x + tau * d1, y + tau * d2]);
+            while(k <= kmax && sminarea <= minarea) 
+            {   
+                k++;
+                Sh = tmpSh;
+                Sh = adaptmesh(Sh, hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
+                sminarea = checkmovemesh(Sh, [x + tau * d1, y + tau * d2]);
+            }
+
+            Sh = movemesh(tmpSh, [x + tau * d1, y + tau * d2]);
+            Sh = adaptmesh(Sh, hmax = mshsize, hmin = mshsize / sqrt(2), ratio = 1.5);
+            plot(Sh);
+
             elastic2D;
             real afterL = L;
 
-            int k = 0;
-            int kmax = 40;
-
-            while(k < kmax && !(afterL < beforeL + sm * tau * dd))
+            if (afterL < beforeL + sm * tau * dd)                                               
             {
-                k++;
-                cout << "Iteration k = " << k << "/" << kmax << ": Step length = " << tau << endl;
-                tau *= beta;
-                Sh = tmpSh;
-
-                Sh = movemesh(Sh, [x + tau * d1, y + tau * d2]);
-                plot(Sh, cmm = "Iteration i = " + i + "/" + imax);
-                elastic2D;
-                afterL = L;
-            }
-
-            if(k < kmax)
-            {
-                l = l - b * (vol(Sh) - convol)/vol0;
-                b = (b < bmax) ? b * alpha : bmax;
-            }
-            else
-            {
-                cout << "The shape has not been changed significant!" << endl;
                 break;
             }
+            else                                                                    
+            {
+                tau *= beta;
+                Sh = tmpSh;
+            }
         }
-        else
+
+        l = l - b * (vol(Sh) - convol)/vol0;
+        b = (b < bmax) ? b * alpha : bmax;
+
+
+        if(j == jmax)
         {
-            cout << "The descent direction is invalid!" << endl;
+            cout << "The shape has not been changed significant!" << endl;
             break;
         }
 
