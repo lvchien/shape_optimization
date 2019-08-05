@@ -18,12 +18,6 @@ FreeFem++ PREFIX_genMesh.edp [--case test_case] [--mshname "name"] [--np num_of_
 ```
 
 #### Run main algorithm:
-Firstly, we should change problem's configurations by redefine macros:
-1. Objective funtion **J** and its derivative **dJ**
-2. Constraint function **Constr**  and its derivative **dCon**
-3. Lagrange function **L** and its derivative **dL**
-4. Solvers of the state system, adjoint system and regularization extension proceduce.
-
 The general syntax is:
 ```
 FreeFem++ PREFIX_main.edp [--case test_case] [--mshname "name"] [--resu "folder"] [--arg value]
