@@ -1,0 +1,41 @@
+/* Copyright V.C. Le, T.T.M. Ta (2019) */
+
+/* identity matrices */
+macro I2() [1.0, 0.0, 0.0, 1.0] //EOM
+macro I3() [1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0] //EOM
+
+
+/* normal vectors */
+macro N2() [N.x, N.y] //EOM
+macro N3() [N.x, N.y, N.z] //EOM
+
+
+/* gradient of a scalar field */
+macro grad2(u) [dx(u), dy(u)] // EOM                         
+macro grad3(u) [dx(u), dy(u), dz(u)] //EOM    
+
+
+/* inner product of 2 vectors */
+macro dot(u, v) (u' * v) //EOM
+
+
+/* Jacobian matrix of a vector field */
+macro Jaco2(u1, u2) [dx(u1), dy(u1), dx(u2), dy(u2)] //EOM
+macro trJaco2(u1, u2) [dx(u1), dx(u2), dy(u1), dy(u2)] //EOM
+macro Jaco3(u1, u2, u3) [dx(u1), dy(u1), dz(u1), dx(u2), dy(u2), dz(u2), dx(u3), dy(u3), dz(u3)] //EOM
+macro trJaco3(u1, u2, u3) [dx(u1), dx(u2), dx(u3), dy(u1), dy(u2), dy(u3), dz(u1), dz(u2), dz(u3)] //EOM
+
+
+/* divergence of a vector field */
+macro div2(u1, u2) (dx(u1) + dy(u2)) // EOM                  
+macro div3(u1, u2, u3) (dx(u1) + dy(u2) + dz(u3)) //EOM
+
+
+/* strain tensor */
+macro eps2(u1, u2) (1./2 * (Jaco2(u1, u2) + trJaco2(u1, u2))) //EOM
+macro eps3(u1, u2, u3) (1./2 * (Jaco3(u1, u2, u3) + trJaco3(u1, u2, u3))) //EOM
+
+
+/* tangential gradient of a scalar field */ 
+macro tgrad2(u) (grad2(u) - grad2(u)' * N2 * N2) //EOM
+macro tgrad3(u) (grad3(u) - grad3(u)' * N3 * N3) //EOM

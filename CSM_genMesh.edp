@@ -1,0 +1,126 @@
+/* Copyright V.C. Le, T.T.M. Ta (2019) */
+
+include "getARGV.idp"
+
+/* Labels */
+int WALL = 1;
+int LOAD = 2;
+int FREE = 3;
+
+/* Parameters */
+int case = getARGV("--case", 1);                                                        // test case
+int np = getARGV("--np", 10);                                                           // number of meshing points
+string mshname = getARGV("--mshname", "");                                              // name of mesh file
+
+mesh Th;
+system("mkdir " + "meshes");
+
+/* Build mesh */
+if (case == 1)                                                                          // short cantilever test case
+{
+
+    border L11(t = 0.0, 0.5){x = t; y = 0.0; label = FREE;}
+    border L21(t = 0.0, 0.45){x = 0.5; y = t; label = FREE;}
+    border L22(t = 0.45, 0.55){x = 0.5; y = t; label = LOAD;}
+    border L23(t = 0.55, 1.0){x = 0.5; y = t; label = FREE;}
+    border L31(t = 0.5, 0){x = t; y = 1.0; label = FREE;}
+    border L41(t = 1.0, 0.9){x = 0.0; y = t; label = WALL;}
+    border L42(t = 0.9, 0.1){x = 0.0; y = t; label = FREE;}
+    border L43(t = 0.1, 0.0){x = 0.0; y = t; label = WALL;}
+
+    Th = buildmesh(L11(5 * np) + L21(5 * np) + L22(1 * np) + L23(5 * np) + L31(5 * np) + L41(1 * np) + L42(8 * np) + L43(1 * np));
+}
+else if (case == 2)                                                                     // long cantilever test case
+{
+    real r = 0.15;                                                                    
+
+    border L11(t = -1.0, 1.0){x = t; y = 0.0; label = FREE;}
+    border L21(t = 0.0, 0.45){x = 1.0; y = t; label = FREE;}
+    border L22(t = 0.45, 0.55){x = 1.0; y = t; label = LOAD;}
+    border L23(t = 0.55, 1.0){x = 1.0; y = t; label = FREE;}
+    border L31(t = 1.0, -1.0){x = t; y = 1.0; label = FREE;}
+    border L41(t = 1.0, 0.9){x = -1.0; y = t; label = WALL;}
+    border L42(t = 0.9, 0.1){x = -1.0; y = t; label = FREE;}
+    border L43(t = 0.1, 0.0){x = -1.0; y = t; label = WALL;}
+
+    
+    border C11(t = 0, 2 * pi){x = -0.6 + r * cos(t); y = 0.22 + r * sin(t); label = FREE;}
+    border C12(t = 0, 2 * pi){x = 0.2 + r * cos(t); y = 0.22 + r * sin(t); label = FREE;}
+    border C21(t = 0, 2 * pi){x = -0.2 + r * cos(t); y = 0.5 + r * sin(t); label = FREE;}
+    border C22(t = 0, 2 * pi){x = 0.6 + r * cos(t); y = 0.5 + r * sin(t); label = FREE;}
+    border C31(t = 0, 2 * pi){x = -0.6 + r * cos(t); y = 0.78 + r * sin(t); label = FREE;}
+    border C32(t = 0, 2 * pi){x = 0.2 + r * cos(t); y = 0.78 + r * sin(t); label = FREE;}
+
+    Th = buildmesh(L11(20 * np) + L21(5 * np) + L22(1 * np) + L23(5 * np) + L31(20 * np) + L41(1 * np) + L42(8 * np) + L43(1 * np)
+                    + C11(-10 * np) + C12(-10 * np)  + C21(-10 * np) + C22(-10 * np) + C31(-10 * np) + C32(-10 * np));
+}
+else if (case == 3)                                                                     // cantilever test case with 2 surface loads
+{
+    real r = 0.2;                                                 
+
+    border L11(t = 0.0, 1.0){x = t; y = 0.0; label = FREE;}
+    border L21(t = 0.0, 0.2){x = 1.0; y = t; label = LOAD;}
+    border L22(t = 0.2, 0.8){x = 1.0; y = t; label = FREE;}
+    border L23(t = 0.8, 1.0){x = 1.0; y = t; label = LOAD;}
+    border L31(t = 1.0, 0.0){x = t; y = 1.0; label = FREE;}
+    border L41(t = 1.0, 0.95){x = 0.0; y = t; label = WALL;}
+    border L42(t = 0.95, 0.05){x = 0.0; y = t; label = FREE;}
+    border L43(t = 0.05, 0.0){x = 0.0; y = t; label = WALL;}
+
+    
+    border C11(t = 0, 2 * pi){x = 0.5 + r * cos(t); y = 0.25 + r * sin(t); label = FREE;}
+    border C31(t = 0, 2 * pi){x = 0.5 + r * cos(t); y = 0.75 + r * sin(t); label = FREE;}
+
+    Th = buildmesh(L11(10 * np) + L21(2 * np) + L22(6 * np) + L23(2 * np) + L31(10 * np) + L41(1 * np) + L42(9 * np) + L43(1 * np)
+        + C11(-15 * np) + C31(-15 * np)
+        );
+}
+else if (case == 4)                                                                     // bridge test case
+{
+    real r = 0.25;
+
+    border L11(t = -1.0, -0.9){x = t; y = 0; label = WALL;}
+    border L12(t = -0.9, -0.2){x = t; y = 0; label = FREE;}
+    border L13(t = -0.2, 0.2){x = t; y = 0; label = LOAD;}
+    border L14(t = 0.2, 0.9){x = t; y = 0; label = FREE;}
+    border L15(t = 0.9, 1.0){x = t; y = 0; label = WALL;}
+    
+    border L21(t = 0, 1.2){x = 1.0; y = t; label = FREE;}
+    border L22(t = 1.0, -1.0){x = t; y = 1.2; label = FREE;}
+    border L23(t = 1.2, 0){x = -1.0; y = t; label = FREE;}
+    
+    border C10(t = 0, 2 * pi){x = -0.6 + r * cos(t); y = 0.4 + r * sin(t); label = FREE;}
+    border C11(t = 0, 2 * pi){x = r * cos(t); y = 0.8 + r * sin(t); label = FREE;}
+    border C12(t = 0, 2 * pi){x = 0.6 + r * cos(t); y = 0.4 + r * sin(t); label = FREE;}
+
+    Th = buildmesh(L11(1 * np) + L12(7 * np) + L13(4 * np) + L14(7 * np) + L15(1 * np) + L21(12 * np) + L22(20 * np) + L23(12 * np) 
+        + C10(-15 * np) + C11(-15 * np) + C12(-15 * np) 
+        );
+}
+else if (case == 5)                                                                     // mast test case
+{
+    real r = 0.05;
+
+    border L11(t = 0.4, -0.4){x = t; y = 1.2; label = FREE;}
+    border L21(t = 1.2, 0.8){x = -0.4; y = t; label = FREE;}
+    border L31(t = -0.4, -0.35){x = t; y = 0.8; label = LOAD;}
+    border L32(t = -0.35, -0.2){x = t; y = 0.8; label = FREE;}
+    border L41(t = 0.8, 0.0){x = -0.2; y = t; label = FREE;}
+    border L51(t = -0.2, -0.15){x = t; y = 0.0; label = WALL;}
+    border L52(t = -0.15, 0.15){x = t; y = 0.0; label = FREE;}
+    border L53(t = 0.15, 0.2){x = t; y = 0.0; label = WALL;}
+    border L42(t = 0.0, 0.8){x = 0.2; y = t; label = FREE;}
+    border L33(t = 0.2, 0.35){x = t; y = 0.8; label = FREE;}
+    border L34(t = 0.35, 0.4){x = t; y = 0.8; label = LOAD;}
+    border L22(t = 0.8, 1.2){x = 0.4; y = t; label = FREE;}
+
+    border C1(t = 0, 2 * pi){x = -0.25 + r * cos(t); y = 1.0 + r * sin(t); label = FREE;}
+    border C2(t = 0, 2 * pi){x = r * cos(t); y = 1.0 + r * sin(t); label = FREE;}
+    border C3(t = 0, 2 * pi){x = 0.25 + r * cos(t); y = 1.0 + r * sin(t); label = FREE;}
+
+    Th = buildmesh(L11(8 * np) + L21(4 * np) + L31(1 * np) + L32(2 * np) + L41(8 * np) + L51(np) + L52(3 * np) + L53(1 * np) 
+                    + L42(8 * np) + L33(2 * np) + L34(1 * np) + L22(4 * np) + C1(-7 * np) + C2(-7 * np) + C3(-7 * np));
+}
+
+savemesh(Th, "meshes/CSM" + mshname + ".mesh");
+plot(Th);
