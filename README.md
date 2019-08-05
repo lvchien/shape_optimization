@@ -2,7 +2,7 @@
 This project is an implementation of the numerical algorithm of shape optimization problems for mechanics models, such as Stokes flow and linear elastic structure. The program is written in Freefem++ tool using finite element method (FEM).
 
 ### Freefem++ installation
-Firstly, you should install most recent [Freefem++](http://www.freefem.org/ff++/). This program was written with version Freefem++ 3.47. 
+Firstly, you should install most recent [Freefem++](http://www.freefem.org/ff++/). This program was written with version Freefem++ 4.2.1. 
 
 ### Clone this repository
 You can download the zip at [here](https://github.com/lvchien/shape_optimization/archive/master.zip) or clone this repository by git command
