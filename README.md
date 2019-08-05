@@ -45,7 +45,7 @@ and other specifed mechanical parameters.
 
 An example command for **pipe** test in **Stokes flow problem** is as follow:
 ```
-FreeFem++ main.edp --case 1 --mshname pipe --resu results\Stokes\pipe --cr 1.0 --b0 10 --bmax 100 --l0 0 --tau 0.01 --errc 0.01 --alpha 1.05 --gm 0.01
+FreeFem++ CFD_main.edp --case 1 --mshname pipe --resu results\Stokes\pipe --cr 1.0 --b0 10 --bmax 100 --l0 0 --tau 0.01 --errc 0.01 --alpha 1.05 --gm 0.01
 ```
 
 ### Authors
