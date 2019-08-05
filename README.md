@@ -18,9 +18,9 @@ FreeFem++ PREFIX_genMesh.edp [--case test_case] [--mshname "name"] [--np num_of_
 ```
 where PREFIX is one of the following short notations:
 
-CFD - Computational Fluid Dynamics
+*CFD* - **Computational Fluid Dynamics**
 
-CSM - Computational Structural Mechanics.
+*CSM* - **Computational Structural Mechanics**.
 
 #### Run main algorithm:
 The general syntax is:
