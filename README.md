@@ -24,8 +24,8 @@ FreeFem++ PREFIX_main.edp [--case test_case] [--mshname "name"] [--resu "folder"
 ```
 where basic options are
 ```
---case    the test case of problems
---mshname    the name of mesh file
+--case        the test case of problems
+--mshname     the name of mesh file
 --resu        the results directory (created if non-existent)
 ```
 and numerical parameters are listed below:
