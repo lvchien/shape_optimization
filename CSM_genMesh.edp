@@ -13,7 +13,7 @@ int np = getARGV("--np", 10);                                                   
 string mshname = getARGV("--mshname", "");                                              // name of mesh file
 
 mesh Th;
-system("mkdir " + "meshes");
+system("mkdir " + "meshes/CSM");
 
 /* Build mesh */
 if (case == 1)                                                                          // short cantilever test case

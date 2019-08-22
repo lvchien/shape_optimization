@@ -1,4 +1,4 @@
-path = "G:/FEM Code/ShapeOptimization/results/Elastic/mast/"
+path = "path_to_result_directory"
 
 set terminal pdfcairo size 20cm, 15cm
   set output path."conve.pdf"
