@@ -16,7 +16,12 @@ The command that be used to generate mesh files is as following syntax:
 ```
 FreeFem++ PREFIX_genMesh.edp [--case test_case] [--mshname "name"] [--np num_of_points] 
 ```
-where PREFIX is a specified short notation of the problem.
+where PREFIX is one of the following short notations:
+
+*CFD* - **Computational Fluid Dynamics**
+
+*CSM* - **Computational Structural Mechanics**.
+
 #### Run main algorithm:
 The general syntax is:
 ```
